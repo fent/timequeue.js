@@ -1,0 +1,28 @@
+{
+  "name": "timequeue",
+  "description": "A queue with custom concurrency and time limits.",
+  "keywords": ["queue", "flow", "time"],
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fent/timequeue.js.git"
+  },
+  "author": "Roly Fentanes (https://github.com/fent)",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "mocha -R spec test/*-test.js"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "devDependencies": {
+    "mocha": "0.x.x"
+  },
+  "licenses": [ {
+    "type": "MIT",
+    "url" : "http://github.com/fent/timequeue.js/raw/master/LICENSE"
+  }]
+}
