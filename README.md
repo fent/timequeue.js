@@ -35,6 +35,9 @@ Creates a new instance of a queue. Worker must be a function with a callback for
 ### TimeQueue#push(data..., [callback])
 Pushes a new task to the queue. Any number of arguments can be given. An optional callback can also be given as the last parameter. The callback will be called when the task is finished or if there was any error.
 
+### TimeQueue#die()
+Empties queue and clears the timeouts TimeQueue sets to keep track of running tasks. Currently running tasks will still complete.
+
 # Events
 
 ### Event: 'error'
