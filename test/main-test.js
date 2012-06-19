@@ -161,3 +161,31 @@ describe('Create a queue with a time limit', function() {
     q.on('drain', done);
   });
 });
+
+
+describe('Create a queue then call its `die` method', function() {
+  var n = 0;
+  var q = new TimeQueue(function(callback) {
+    n++;
+    process.nextTick(callback);
+  }, 3, 0);
+
+  it('Does not process queued tasks', function(done) {
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.push();
+    q.die();
+
+    process.nextTick(function() {
+      assert.equal(n, 3);
+      done();
+    });
+  });
+});
