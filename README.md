@@ -41,22 +41,19 @@ Empties queue and clears the timeouts TimeQueue sets to keep track of running ta
 # Events
 
 ### Event: 'error'
-`function (err) { }`
+* `Error`
 
 Emitted when there is an error processing a task and a callback isn't given to the `push` method.
 
 ### Event: 'full'
-`function () { }`
 
 Queue is full.
 
 ### Event: 'empty'
-`function () { }`
 
 Queue is empty, some tasks might still be running.
 
 ### Event: 'drain'
-`function () { }`
 
 Queue is empty and last task has finished.
 
