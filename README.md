@@ -32,6 +32,14 @@ Creates a new instance of a queue. Worker must be a function with a callback for
 
 `worker`, `concurrency` and `time` properties can later be edited on the queue instance.
 
+### TimeQueue#active
+
+How many tasks are currently active.
+
+### TimeQueue#queued
+
+How many tasks are currently in the queue.
+
 ### TimeQueue#push(data..., [callback])
 Pushes a new task to the queue. Any number of arguments can be given. An optional callback can also be given as the last parameter. The callback will be called when the task is finished or if there was any error.
 
