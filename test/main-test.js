@@ -23,28 +23,37 @@ describe('Create a queue and add to it', function() {
     q.push();
     assert.equal(n, 1);
     assert.equal(full, false);
+    assert.equal(q.queued, 0);
 
     q.push();
     assert.equal(n, 2);
     assert.equal(full, false);
+    assert.equal(q.queued, 0);
 
     q.push();
     assert.equal(n, 3);
     assert.equal(full, true);
+    assert.equal(q.queued, 0);
 
     q.push();
     assert.equal(n, 3);
     assert.equal(full, true);
+    assert.equal(q.queued, 1);
 
     q.push();
     assert.equal(n, 3);
     assert.equal(full, true);
+    assert.equal(q.queued, 2);
 
     q.push();
     assert.equal(n, 3);
     assert.equal(full, true);
+    assert.equal(q.queued, 3);
 
-    q.on('drain', done);
+    q.on('drain', function() {
+      assert.equal(q.active, 0);
+      done();
+    });
   });
 });
 
@@ -117,7 +126,7 @@ describe('Create a queue with a worker that always errors', function() {
   }, 10);
 
   it('Emits an `error` event', function(done) {
-    q.push('whatever');
+    q.push();
     q.once('error', function(err) {
       assert.equal(err.message, 'gotcha');
       done();
@@ -125,10 +134,8 @@ describe('Create a queue with a worker that always errors', function() {
   });
 
   describe('Push task with callback', function() {
-    it('Does not emit `error` event, calls calback with error', function(done) {
-      q.once('error', function(err) {
-        throw err;
-      });
+    it('Does not emit `error`, calls callback with error', function(done) {
+      q.once('error', done);
 
       q.push(function(err) {
         assert.equal(err.message, 'gotcha');
