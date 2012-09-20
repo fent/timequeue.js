@@ -13,7 +13,7 @@ function worker(arg1, arg2, callback) {
 }
 
 // create a queue with max 5 concurrency every second
-var q = new TimeQueue(worker, 5, 1000);
+var q = new TimeQueue(worker, { concurrency: 5, every: 1000 });
 
 // push tasks onto the queue
 q.push(42, 24);
@@ -27,10 +27,26 @@ q.push(2, 2, function(err) {
 
 
 # API
-### new TimeQueue(worker, [concurrency], [time])
-Creates a new instance of a queue. Worker must be a function with a callback for its last argument. The callback must be called in order for the queue to know when the worker has finished a task. `concurrency` defaults to `1` and `time` to `1000`. Meaning one task in the queue will be executed a maximum of one time per second. If `time` is set to `0`, there will be no time limit.
+### new TimeQueue(worker, [options])
+Creates a new instance of a queue. Worker must be a function with a callback for its last argument. The callback must be called in order for the queue to know when the worker has finished a task. `options` defaults to the following
 
-`worker`, `concurrency` and `time` properties can later be edited on the queue instance.
+```js
+{
+  // how many tasks to execute concurrently.
+  concurrency: 1
+
+  // maximum amount of tasks to execute per a given time limit in milliseconds.
+  // if number of tasks are finished faster than the limit, they will be queued.
+, every: 0
+
+  // if set, will emit an `error` event if a tasks takes too much time.
+  // if callback was given to that task,
+  // it will be called with the error instead.
+, timeout: 0
+}
+```
+
+`worker`, `concurrency`, `time`, and `timeout` properties can later be edited on the queue instance.
 
 ### TimeQueue#active
 

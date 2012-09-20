@@ -13,7 +13,7 @@ describe('Create a queue and add to it', function() {
       n--;
       callback();
     });
-  }, 3, 0);
+  }, { concurrency: 3 });
 
   q.on('full', function() {
     full = true;
@@ -65,7 +65,7 @@ describe('Create a queue with variable number of arguments', function() {
     lastB = b;
     lastC = c;
     process.nextTick(callback);
-  }, 10);
+  }, { concurrency: 10, every: 1000 });
 
   it('Calls worker with correct arguments', function() {
     q.push(1, 2, 3);
@@ -123,7 +123,7 @@ describe('Create a queue with a worker that always errors', function() {
     process.nextTick(function() {
       callback(new Error('gotcha'));
     });
-  }, 10);
+  }, { concurrency: 10 });
 
   it('Emits an `error` event', function(done) {
     q.push();
@@ -157,7 +157,7 @@ describe('Create a queue with a time limit', function() {
       n--;
       callback();
     }, Math.floor(Math.random() * time * 2));
-  }, concurrency, time);
+  }, { concurrency: concurrency, ever: time });
 
   it('Concurrency does not exceed the time limit', function(done) {
     for (var i = 0; i < 10; i++) {
@@ -175,7 +175,7 @@ describe('Create a queue then call its `die` method', function() {
   var q = new TimeQueue(function(callback) {
     n++;
     process.nextTick(callback);
-  }, 3, 0);
+  }, { concurrency: 3 });
 
   it('Does not process queued tasks', function(done) {
     q.push();
