@@ -56,6 +56,10 @@ How many tasks are currently active.
 
 How many tasks are currently in the queue.
 
+### TimeQueue#finished
+
+How many tasks have finished in total.
+
 ### TimeQueue#push(data..., [callback])
 Pushes a new task to the queue. Any number of arguments can be given. An optional callback can also be given as the last parameter. The callback will be called when the task is finished or if there was any error.
 
