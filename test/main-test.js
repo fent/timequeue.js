@@ -4,16 +4,9 @@ var TimeQueue = require('..')
 
 
 describe('Create a queue and add to it', function() {
-  var n = 0;
   var full = false;
 
-  var q = new TimeQueue(function(callback) {
-    n++;
-    process.nextTick(function() {
-      n--;
-      callback();
-    });
-  }, { concurrency: 3 });
+  var q = new TimeQueue(process.nextTick.bind(process), { concurrency: 3 });
 
   q.on('full', function() {
     full = true;
@@ -21,32 +14,32 @@ describe('Create a queue and add to it', function() {
 
   it('Does not execute more tasks than its concurrency', function(done) {
     q.push();
-    assert.equal(n, 1);
+    assert.equal(q.active, 1);
     assert.equal(full, false);
     assert.equal(q.queued, 0);
 
     q.push();
-    assert.equal(n, 2);
+    assert.equal(q.active, 2);
     assert.equal(full, false);
     assert.equal(q.queued, 0);
 
     q.push();
-    assert.equal(n, 3);
+    assert.equal(q.active, 3);
     assert.equal(full, true);
     assert.equal(q.queued, 0);
 
     q.push();
-    assert.equal(n, 3);
+    assert.equal(q.active, 3);
     assert.equal(full, true);
     assert.equal(q.queued, 1);
 
     q.push();
-    assert.equal(n, 3);
+    assert.equal(q.active, 3);
     assert.equal(full, true);
     assert.equal(q.queued, 2);
 
     q.push();
-    assert.equal(n, 3);
+    assert.equal(q.active, 3);
     assert.equal(full, true);
     assert.equal(q.queued, 3);
 
@@ -142,30 +135,6 @@ describe('Create a queue with a worker that always errors', function() {
         done();
       });
     });
-  });
-});
-
-
-describe('Create a queue with a time limit', function() {
-  var concurrency = 3;
-  var time = 100;
-  var n = 0;
-
-  var q = new TimeQueue(function(callback) {
-    n++;
-    setTimeout(function() {
-      n--;
-      callback();
-    }, Math.floor(Math.random() * time * 2));
-  }, { concurrency: concurrency, every: time });
-
-  it('Concurrency does not exceed the time limit', function(done) {
-    for (var i = 0; i < 10; i++) {
-      q.push();
-      assert.ok(n <= concurrency);
-    }
-
-    q.on('drain', done);
   });
 });
 
