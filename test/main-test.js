@@ -157,7 +157,7 @@ describe('Create a queue with a time limit', function() {
       n--;
       callback();
     }, Math.floor(Math.random() * time * 2));
-  }, { concurrency: concurrency, ever: time });
+  }, { concurrency: concurrency, every: time });
 
   it('Concurrency does not exceed the time limit', function(done) {
     for (var i = 0; i < 10; i++) {
