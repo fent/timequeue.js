@@ -54,7 +54,7 @@ How many tasks are currently active.
 
 ### TimeQueue#intransit
 
-If you use the `every` option to queue up tasks, this property will be delayed from being updating until there are free spots open for new tasks to begin. `active` will be updated as soon as a task finishes, even if the next one is just a timeout around the corner.
+If you use the `every` option to queue up tasks, this property will be delayed from being updated until there are free spots open for new tasks to begin. `active` will be updated as soon as a task finishes, even if the next one is just a timeout around the corner.
 
 ### TimeQueue#queued
 
