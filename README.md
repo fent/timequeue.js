@@ -32,21 +32,27 @@ Creates a new instance of a queue. Worker must be a function with a callback for
 
 ```js
 {
-  // how many tasks to execute concurrently.
+  // Maximum tasks to execute concurrently.
   concurrency: 1
 
-  // maximum amount of tasks to execute per a given time limit in milliseconds.
-  // if number of tasks are finished faster than the limit, they will be queued.
+  // How much time in milliseconds to allow no more than
+  // the max number of concurrent tasks to run.
+  // If the max amount of concurrent tasks are finished faster than the limit,
+  // they will be queued.
 , every: 0
 
-  // if set, will emit an `error` event if a tasks takes too much time.
+  // Maximum number of tasks to keep in the queue.
+  // While full, pushed tasks will be ignored.
+, maxQueued: Infinity
+
+  // If set, will emit an `error` event if a tasks takes too much time.
   // if callback was given to that task,
   // it will be called with the error instead.
 , timeout: 0
 }
 ```
 
-`worker`, `concurrency`, `time`, and `timeout` properties can later be edited on the queue instance.
+All of these options can later be edited on the queue instance.
 
 ### TimeQueue#active
 
@@ -83,7 +89,7 @@ Queue is full.
 
 ### Event: 'empty'
 
-Queue is empty, some tasks might still be running.
+Queue is empty, with tasks still running.
 
 ### Event: 'drain'
 
