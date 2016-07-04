@@ -1,6 +1,5 @@
-var TimeQueue = require('..')
-  , assert = require('assert')
-  ;
+var TimeQueue = require('..');
+var assert = require('assert');
 
 
 describe('Create a queue and add to it', function() {

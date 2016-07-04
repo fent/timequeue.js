@@ -16,7 +16,8 @@
     "lib": "./lib"
   },
   "devDependencies": {
-    "mocha": "x"
+    "mocha": "x",
+    "sinon": "x"
   },
   "licenses": [ {
     "type": "MIT",
