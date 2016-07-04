@@ -1,6 +1,6 @@
-var TimeQueue = require('..')
-  , assert = require('assert')
-  ;
+var TimeQueue = require('..');
+var assert = require('assert');
+var sinon = require('sinon');
 
 
 describe('Create a queue with a timeout', function() {
@@ -17,6 +17,11 @@ describe('Create a queue with a timeout', function() {
   });
 
   describe('With tasks that lag', function() {
+    var clock;
+    before(function() { clock = sinon.useFakeTimers(); });
+    after(function() { clock.restore(); });
+
+    /* jshint unused: false */
     var q = new TimeQueue(function(a, b, callback) {}, { timeout: 50 });
 
     it('Should throw an error', function(done) {
@@ -28,6 +33,7 @@ describe('Create a queue with a timeout', function() {
         assert.equal(err.args[1], 4);
         done();
       });
+      clock.tick(1000);
     });
 
     it('Should call the callback with the error', function(done) {
@@ -38,6 +44,7 @@ describe('Create a queue with a timeout', function() {
         assert.equal(err.args[1], 'world');
         done();
       });
+      clock.tick(50);
     });
   });
 });
