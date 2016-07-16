@@ -22,7 +22,9 @@ describe('Create a queue with a timeout', function() {
     after(function() { clock.restore(); });
 
     /* jshint unused: false */
-    var q = new TimeQueue(function(a, b, callback) {}, { timeout: 50 });
+    var q = new TimeQueue(function(a, b, callback) {
+      setTimeout(callback, 100);
+    }, { timeout: 50 });
 
     it('Should throw an error', function(done) {
       q.push(3, 4);
@@ -33,7 +35,7 @@ describe('Create a queue with a timeout', function() {
         assert.equal(err.args[1], 4);
         done();
       });
-      clock.tick(1000);
+      clock.tick(100);
     });
 
     it('Should call the callback with the error', function(done) {

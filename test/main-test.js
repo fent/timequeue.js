@@ -47,6 +47,15 @@ describe('Create a queue and add to it', function() {
       done();
     });
   });
+
+  describe('With default options', function() {
+    var q = new TimeQueue(process.nextTick.bind(process));
+    it('Has defaults set', function() {
+      assert.equal(q.concurrency, 1);
+      assert.equal(q.every, 0);
+      assert.equal(q.timeout, 0);
+    });
+  });
 });
 
 
@@ -134,6 +143,20 @@ describe('Create a queue with a worker that always errors', function() {
         done();
       });
     });
+  });
+});
+
+
+describe('Create a queue with a callback called twice', function() {
+  it('Throws an error', function(done) {
+    var q = new TimeQueue(function(callback) {
+      assert.throws(function() {
+        callback();
+        callback();
+      }, /should only be called once/);
+      done();
+    });
+    q.push();
   });
 });
 
