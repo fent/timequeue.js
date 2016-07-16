@@ -10,14 +10,15 @@
   "author": "fent (https://github.com/fent)",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "mocha -R spec test/*-test.js"
+    "test": "istanbul cover node_modules/.bin/_mocha test/*-test.js"
   },
   "directories": {
     "lib": "./lib"
   },
   "devDependencies": {
-    "mocha": "x",
-    "sinon": "x"
+    "istanbul": "*",
+    "mocha": "*",
+    "sinon": "*"
   },
   "licenses": [ {
     "type": "MIT",
