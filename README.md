@@ -2,7 +2,7 @@
 
 A queue with custom concurrency and time limits. Inspired by [caolan/async#queue](https://github.com/caolan/async#queue), but with variable number of arguments in the worker, events, and with optional time limits.
 
-[![Build Status](https://secure.travis-ci.org/fent/timequeue.js.png)](http://travis-ci.org/fent/timequeue.js)
+[![Build Status](https://secure.travis-ci.org/fent/timequeue.js.svg)](http://travis-ci.org/fent/timequeue.js)
 [![Dependency Status](https://gemnasium.com/fent/timequeue.js.svg)](https://gemnasium.com/fent/timequeue.js)
 [![codecov](https://codecov.io/gh/fent/timequeue.js/branch/master/graph/badge.svg)](https://codecov.io/gh/fent/timequeue.js)
 
