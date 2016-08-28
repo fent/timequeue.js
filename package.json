@@ -10,7 +10,7 @@
   "author": "fent (https://github.com/fent)",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "istanbul cover node_modules/.bin/_mocha test/*-test.js"
+    "test": "istanbul cover node_modules/.bin/_mocha -- test/*-test.js"
   },
   "directories": {
     "lib": "./lib"
