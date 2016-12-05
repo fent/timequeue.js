@@ -20,8 +20,5 @@
     "mocha": "*",
     "sinon": "*"
   },
-  "licenses": [ {
-    "type": "MIT",
-    "url" : "http://github.com/fent/timequeue.js/raw/master/LICENSE"
-  }]
+  "license": "MIT"
 }
