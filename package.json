@@ -1,8 +1,12 @@
 {
   "name": "timequeue",
   "description": "A queue with custom concurrency and time limits.",
-  "keywords": ["queue", "flow", "time"],
-  "version": "0.2.2",
+  "keywords": [
+    "queue",
+    "flow",
+    "time"
+  ],
+  "version": "0.2.3",
   "repository": {
     "type": "git",
     "url": "git://github.com/fent/timequeue.js.git"
