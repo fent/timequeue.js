@@ -6,7 +6,7 @@
     "flow",
     "time"
   ],
-  "version": "0.2.3",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/fent/timequeue.js.git"
