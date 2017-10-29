@@ -1,10 +1,10 @@
-var TimeQueue = require('..');
-var assert = require('assert');
+const TimeQueue = require('..');
+const assert = require('assert');
 
 
-describe('Create a queue and add to it', function() {
+describe('Create a queue and add to it', () => {
   var n = 0;
-  var q = new TimeQueue(function worker(callback) {
+  var q = new TimeQueue((callback) => {
     n++;
     process.nextTick(callback);
   }, {
@@ -12,12 +12,12 @@ describe('Create a queue and add to it', function() {
     maxQueued: 2
   });
 
-  it('Ignores tasks pushed after it is full', function(done) {
+  it('Ignores tasks pushed after it is full', (done) => {
     for (var i = 0; i < 10; i++) {
       q.push();
     }
 
-    q.on('drain', function() {
+    q.on('drain', () => {
       assert.equal(n, 5);
       done();
     });

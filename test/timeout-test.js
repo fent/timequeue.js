@@ -1,13 +1,13 @@
-var TimeQueue = require('..');
-var assert = require('assert');
-var sinon = require('sinon');
+const TimeQueue = require('..');
+const assert = require('assert');
+const sinon = require('sinon');
 
 
-describe('Create a queue with a timeout', function() {
-  describe('With tasks that finish immediately', function() {
+describe('Create a queue with a timeout', () => {
+  describe('With tasks that finish immediately', () => {
     var q = new TimeQueue(process.nextTick, { timeout: 1000 });
 
-    it('Should execute tasks without problems', function(done) {
+    it('Should execute tasks without problems', (done) => {
       for (var i = 0; i < 10; i++) {
         q.push();
       }
@@ -16,19 +16,19 @@ describe('Create a queue with a timeout', function() {
     });
   });
 
-  describe('With tasks that lag', function() {
+  describe('With tasks that lag', () => {
     var clock;
-    before(function() { clock = sinon.useFakeTimers(); });
-    after(function() { clock.restore(); });
+    before(() => { clock = sinon.useFakeTimers(); });
+    after(() => { clock.restore(); });
 
     /* jshint unused: false */
-    var q = new TimeQueue(function(a, b, callback) {
+    var q = new TimeQueue((a, b, callback) => {
       setTimeout(callback, 100);
     }, { timeout: 50 });
 
-    it('Should throw an error', function(done) {
+    it('Should throw an error', (done) => {
       q.push(3, 4);
-      q.on('error', function(err) {
+      q.on('error', (err) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
         assert.equal(err.args[0], 3);
@@ -38,8 +38,8 @@ describe('Create a queue with a timeout', function() {
       clock.tick(100);
     });
 
-    it('Should call the callback with the error', function(done) {
-      q.push('hello!', 'world', function(err) {
+    it('Should call the callback with the error', (done) => {
+      q.push('hello!', 'world', (err) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
         assert.equal(err.args[0], 'hello!');

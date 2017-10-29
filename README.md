@@ -9,7 +9,7 @@ A queue with custom concurrency and time limits. Inspired by [caolan/async#queue
 # Usage
 
 ```js
-var TimeQueue = require('timequeue');
+const TimeQueue = require('timequeue');
 
 function worker(arg1, arg2, callback) {
   someAsyncFunction(calculation(arg1, arg2), callback);
@@ -23,7 +23,7 @@ q.push(42, 24);
 q.push(2, 74);
 
 // optional callback when pushing tasks
-q.push(2, 2, function(err) {
+q.push(2, 2, (err) => {
   // task finished
 });
 ```

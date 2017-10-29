@@ -1,17 +1,17 @@
-var TimeQueue = require('..');
-var assert = require('assert');
+const TimeQueue = require('..');
+const assert = require('assert');
 
 
-describe('Create a queue and add to it', function() {
+describe('Create a queue and add to it', () => {
   var full = false;
 
   var q = new TimeQueue(process.nextTick.bind(process), { concurrency: 3 });
 
-  q.on('full', function() {
+  q.on('full', () => {
     full = true;
   });
 
-  it('Does not execute more tasks than its concurrency', function(done) {
+  it('Does not execute more tasks than its concurrency', (done) => {
     q.push();
     assert.equal(q.active, 1);
     assert.equal(full, false);
@@ -42,15 +42,15 @@ describe('Create a queue and add to it', function() {
     assert.equal(full, true);
     assert.equal(q.queued, 3);
 
-    q.on('drain', function() {
+    q.on('drain', () => {
       assert.equal(q.active, 0);
       done();
     });
   });
 
-  describe('With default options', function() {
+  describe('With default options', () => {
     var q = new TimeQueue(process.nextTick.bind(process));
-    it('Has defaults set', function() {
+    it('Has defaults set', () => {
       assert.equal(q.concurrency, 1);
       assert.equal(q.every, 0);
       assert.equal(q.timeout, 0);
@@ -59,16 +59,16 @@ describe('Create a queue and add to it', function() {
 });
 
 
-describe('Create a queue with variable number of arguments', function() {
+describe('Create a queue with variable number of arguments', () => {
   var lastA, lastB, lastC;
-  var q = new TimeQueue(function(a, b, c, callback) {
+  var q = new TimeQueue((a, b, c, callback) => {
     lastA = a;
     lastB = b;
     lastC = c;
     process.nextTick(callback);
   }, { concurrency: 10, every: 1000 });
 
-  it('Calls worker with correct arguments', function() {
+  it('Calls worker with correct arguments', () => {
     q.push(1, 2, 3);
     assert.equal(lastA, 1);
     assert.equal(lastB, 2);
@@ -80,8 +80,8 @@ describe('Create a queue with variable number of arguments', function() {
     assert.equal(lastC, 'hello');
   });
 
-  describe('Push with callback', function() {
-    it('Calls callback when task finishes', function(done) {
+  describe('Push with callback', () => {
+    it('Calls callback when task finishes', (done) => {
       q.push(3, 2, 1, done);
       assert.equal(lastA, 3);
       assert.equal(lastB, 2);
@@ -89,8 +89,8 @@ describe('Create a queue with variable number of arguments', function() {
     });
   });
 
-  describe('Push tasks without all of the arguments', function() {
-    it('Considers arguments not provided undefined in the worker', function() {
+  describe('Push tasks without all of the arguments', () => {
+    it('Considers arguments not provided undefined in the worker', () => {
       q.push(4, 2);
       assert.equal(lastA, 4);
       assert.equal(lastB, 2);
@@ -107,8 +107,8 @@ describe('Create a queue with variable number of arguments', function() {
       assert.equal(lastC, undefined);
     });
 
-    describe('Push with callback', function() {
-      it('Calls callback when task finishes', function(done) {
+    describe('Push with callback', () => {
+      it('Calls callback when task finishes', (done) => {
         q.push('foo', 'bar', undefined, done);
         assert.equal(lastA, 'foo');
         assert.equal(lastB, 'bar');
@@ -119,26 +119,26 @@ describe('Create a queue with variable number of arguments', function() {
 });
 
 
-describe('Create a queue with a worker that always errors', function() {
-  var q = new TimeQueue(function(callback) {
-    process.nextTick(function() {
+describe('Create a queue with a worker that always errors', () => {
+  var q = new TimeQueue((callback) => {
+    process.nextTick(() => {
       callback(new Error('gotcha'));
     });
   }, { concurrency: 10 });
 
-  it('Emits an `error` event', function(done) {
+  it('Emits an `error` event', (done) => {
     q.push();
-    q.once('error', function(err) {
+    q.once('error', (err) => {
       assert.equal(err.message, 'gotcha');
       done();
     });
   });
 
-  describe('Push task with callback', function() {
-    it('Does not emit `error`, calls callback with error', function(done) {
+  describe('Push task with callback', () => {
+    it('Does not emit `error`, calls callback with error', (done) => {
       q.once('error', done);
 
-      q.push(function(err) {
+      q.push((err) => {
         assert.equal(err.message, 'gotcha');
         done();
       });
@@ -147,10 +147,10 @@ describe('Create a queue with a worker that always errors', function() {
 });
 
 
-describe('Create a queue with a callback called twice', function() {
-  it('Throws an error', function(done) {
-    var q = new TimeQueue(function(callback) {
-      assert.throws(function() {
+describe('Create a queue with a callback called twice', () => {
+  it('Throws an error', (done) => {
+    var q = new TimeQueue((callback) => {
+      assert.throws(() => {
         callback();
         callback();
       }, /should only be called once/);
@@ -161,14 +161,14 @@ describe('Create a queue with a callback called twice', function() {
 });
 
 
-describe('Create a queue then call its `die` method', function() {
+describe('Create a queue then call its `die` method', () => {
   var n = 0;
-  var q = new TimeQueue(function(callback) {
+  var q = new TimeQueue((callback) => {
     n++;
     process.nextTick(callback);
   }, { concurrency: 3 });
 
-  it('Does not process queued tasks', function(done) {
+  it('Does not process queued tasks', (done) => {
     q.push();
     q.push();
     q.push();
@@ -181,7 +181,7 @@ describe('Create a queue then call its `die` method', function() {
     q.push();
     q.die();
 
-    process.nextTick(function() {
+    process.nextTick(() => {
       assert.equal(n, 3);
       done();
     });
