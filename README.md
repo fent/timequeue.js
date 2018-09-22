@@ -11,12 +11,12 @@ A queue with custom concurrency and time limits. Inspired by [caolan/async#queue
 ```js
 const TimeQueue = require('timequeue');
 
-function worker(arg1, arg2, callback) {
+const worker = (arg1, arg2, callback) => {
   someAsyncFunction(calculation(arg1, arg2), callback);
-}
+};
 
 // create a queue with max 5 concurrency every second
-var q = new TimeQueue(worker, { concurrency: 5, every: 1000 });
+let q = new TimeQueue(worker, { concurrency: 5, every: 1000 });
 
 // push tasks onto the queue
 q.push(42, 24);

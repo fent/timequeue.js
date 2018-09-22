@@ -5,10 +5,10 @@ const sinon = require('sinon');
 
 describe('Create a queue with a timeout', () => {
   describe('With tasks that finish immediately', () => {
-    var q = new TimeQueue(process.nextTick, { timeout: 1000 });
+    const q = new TimeQueue(process.nextTick, { timeout: 1000 });
 
     it('Should execute tasks without problems', (done) => {
-      for (var i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i++) {
         q.push();
       }
 
@@ -17,12 +17,12 @@ describe('Create a queue with a timeout', () => {
   });
 
   describe('With tasks that lag', () => {
-    var clock;
-    before(() => { clock = sinon.useFakeTimers(); });
-    after(() => { clock.restore(); });
+    let clock;
+    before(() => clock = sinon.useFakeTimers());
+    after(() => clock.restore());
 
     /* jshint unused: false */
-    var q = new TimeQueue((a, b, callback) => {
+    const q = new TimeQueue((a, b, callback) => {
       setTimeout(callback, 100);
     }, { timeout: 50 });
 

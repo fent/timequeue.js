@@ -3,8 +3,8 @@ const assert = require('assert');
 
 
 describe('Create a queue and add to it', () => {
-  var n = 0;
-  var q = new TimeQueue((callback) => {
+  let n = 0;
+  const q = new TimeQueue((callback) => {
     n++;
     process.nextTick(callback);
   }, {
@@ -13,7 +13,7 @@ describe('Create a queue and add to it', () => {
   });
 
   it('Ignores tasks pushed after it is full', (done) => {
-    for (var i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
       q.push();
     }
 

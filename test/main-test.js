@@ -3,9 +3,8 @@ const assert = require('assert');
 
 
 describe('Create a queue and add to it', () => {
-  var full = false;
-
-  var q = new TimeQueue(process.nextTick.bind(process), { concurrency: 3 });
+  let full = false;
+  const q = new TimeQueue(process.nextTick, { concurrency: 3 });
 
   q.on('full', () => {
     full = true;
@@ -49,7 +48,7 @@ describe('Create a queue and add to it', () => {
   });
 
   describe('With default options', () => {
-    var q = new TimeQueue(process.nextTick.bind(process));
+    const q = new TimeQueue(process.nextTick.bind(process));
     it('Has defaults set', () => {
       assert.equal(q.concurrency, 1);
       assert.equal(q.every, 0);
@@ -60,8 +59,8 @@ describe('Create a queue and add to it', () => {
 
 
 describe('Create a queue with variable number of arguments', () => {
-  var lastA, lastB, lastC;
-  var q = new TimeQueue((a, b, c, callback) => {
+  let lastA, lastB, lastC;
+  const q = new TimeQueue((a, b, c, callback) => {
     lastA = a;
     lastB = b;
     lastC = c;
@@ -120,7 +119,7 @@ describe('Create a queue with variable number of arguments', () => {
 
 
 describe('Create a queue with a worker that always errors', () => {
-  var q = new TimeQueue((callback) => {
+  const q = new TimeQueue((callback) => {
     process.nextTick(() => {
       callback(new Error('gotcha'));
     });
@@ -149,7 +148,7 @@ describe('Create a queue with a worker that always errors', () => {
 
 describe('Create a queue with a callback called twice', () => {
   it('Throws an error', (done) => {
-    var q = new TimeQueue((callback) => {
+    const q = new TimeQueue((callback) => {
       assert.throws(() => {
         callback();
         callback();
@@ -162,8 +161,8 @@ describe('Create a queue with a callback called twice', () => {
 
 
 describe('Create a queue then call its `die` method', () => {
-  var n = 0;
-  var q = new TimeQueue((callback) => {
+  let n = 0;
+  const q = new TimeQueue((callback) => {
     n++;
     process.nextTick(callback);
   }, { concurrency: 3 });
