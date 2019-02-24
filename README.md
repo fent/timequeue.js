@@ -74,7 +74,12 @@ How many tasks are currently in the queue.
 How many tasks have finished in total.
 
 ### TimeQueue#push(data..., [callback])
-Pushes a new task to the queue. Any number of arguments can be given. An optional callback can also be given as the last parameter. The callback will be called when the task is finished or if there was any error.
+Pushes a new task to the queue. Any number of arguments can be given. An optional callback can also be given as the last parameter. The callback will be called when the task is finished or if there was any error running the worker.
+
+If the queue is full, pushed tasks will be ignored.
+
+### TimeQueue#isFull()
+Returns true if queue is full.
 
 ### TimeQueue#die()
 Empties queue and clears the timeouts TimeQueue sets to keep track of running tasks. Currently running tasks will still complete.
