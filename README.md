@@ -4,7 +4,7 @@ A queue with custom concurrency and time limits. Inspired by [caolan/async#queue
 
 [![Build Status](https://secure.travis-ci.org/fent/timequeue.js.svg)](http://travis-ci.org/fent/timequeue.js)
 [![Dependency Status](https://david-dm.org/fent/timequeue.js.svg)](https://david-dm.org/fent/timequeue.js)
-[![codecov](https://codecov.io/gh/fent/timequeue.js/branch/master/graph/badge.svg)](https://codecov.io/gh/fent/timequeue.js)
+[![codecov](https://codecov.io/gh/fent/timequeue.js/branch/master/graph/badge.svg)](https://codecov.io/gh/fent/timequeue.js) [![Greenkeeper badge](https://badges.greenkeeper.io/fent/timequeue.js.svg)](https://greenkeeper.io/)
 
 # Usage
 
