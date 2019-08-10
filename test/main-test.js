@@ -121,7 +121,7 @@ describe('Create a queue with variable number of arguments', () => {
 describe('Create a queue with a worker that always errors', () => {
   const q = new TimeQueue((callback) => {
     process.nextTick(() => {
-      callback(new Error('gotcha'));
+      callback(Error('gotcha'));
     });
   }, { concurrency: 10 });
 
