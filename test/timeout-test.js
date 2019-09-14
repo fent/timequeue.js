@@ -5,13 +5,11 @@ const sinon = require('sinon');
 
 describe('Create a queue with a timeout', () => {
   describe('With tasks that finish immediately', () => {
-    const q = new TimeQueue(process.nextTick, { timeout: 1000 });
-
     it('Should execute tasks without problems', (done) => {
+      const q = new TimeQueue(process.nextTick, { timeout: 1000 });
       for (let i = 0; i < 10; i++) {
         q.push();
       }
-
       q.on('drain', done);
     });
   });
@@ -21,12 +19,10 @@ describe('Create a queue with a timeout', () => {
     before(() => clock = sinon.useFakeTimers());
     after(() => clock.restore());
 
-    /* jshint unused: false */
-    const q = new TimeQueue((a, b, callback) => {
-      setTimeout(callback, 100);
-    }, { timeout: 50 });
-
     it('Should reject', (done) => {
+      const q = new TimeQueue((a, b, callback) => {
+        setTimeout(callback, 100);
+      }, { timeout: 50 });
       let p = q.push(3, 4);
       p.catch((err) => {
         assert(err);
@@ -39,6 +35,9 @@ describe('Create a queue with a timeout', () => {
     });
 
     it('Should call the callback with the error', (done) => {
+      const q = new TimeQueue((a, b, callback) => {
+        setTimeout(callback, 100);
+      }, { timeout: 50 });
       q.push('hello!', 'world', (err) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');

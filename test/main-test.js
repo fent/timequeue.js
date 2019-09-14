@@ -3,14 +3,12 @@ const assert = require('assert');
 
 
 describe('Create a queue and add to it', () => {
-  let full = false;
-  const q = new TimeQueue(callback => process.nextTick(callback), { concurrency: 3 });
-
-  q.on('full', () => {
-    full = true;
-  });
-
   it('Does not execute more tasks than its concurrency', (done) => {
+    const q = new TimeQueue(callback => process.nextTick(callback), { concurrency: 3 });
+
+    let full = false;
+    q.on('full', () => { full = true; });
+
     q.push();
     assert.equal(q.active, 1);
     assert.equal(full, false);
@@ -59,15 +57,15 @@ describe('Create a queue and add to it', () => {
 
 
 describe('Create a queue with variable number of arguments', () => {
-  let lastA, lastB, lastC;
-  const q = new TimeQueue((a, b, c, callback) => {
-    lastA = a;
-    lastB = b;
-    lastC = c;
-    process.nextTick(callback);
-  }, { concurrency: 10, every: 1000 });
-
   it('Calls worker with correct arguments', () => {
+    let lastA, lastB, lastC;
+    const q = new TimeQueue((a, b, c, callback) => {
+      lastA = a;
+      lastB = b;
+      lastC = c;
+      process.nextTick(callback);
+    }, { concurrency: 10, every: 1000 });
+
     q.push(1, 2, 3);
     assert.equal(lastA, 1);
     assert.equal(lastB, 2);
@@ -91,6 +89,13 @@ describe('Create a queue with variable number of arguments', () => {
 
   describe('Push with callback', () => {
     it('Calls callback when task finishes', (done) => {
+      let lastA, lastB, lastC;
+      const q = new TimeQueue((a, b, c, callback) => {
+        lastA = a;
+        lastB = b;
+        lastC = c;
+        process.nextTick(callback);
+      }, { concurrency: 10, every: 1000 });
       q.push(3, 2, 1, done);
       assert.equal(lastA, 3);
       assert.equal(lastB, 2);
@@ -100,6 +105,14 @@ describe('Create a queue with variable number of arguments', () => {
 
   describe('Push tasks without all of the arguments', () => {
     it('Considers arguments not provided undefined in the worker', () => {
+      let lastA, lastB, lastC;
+      const q = new TimeQueue((a, b, c, callback) => {
+        lastA = a;
+        lastB = b;
+        lastC = c;
+        process.nextTick(callback);
+      }, { concurrency: 10, every: 1000 });
+
       q.push(4, 2);
       assert.equal(lastA, 4);
       assert.equal(lastB, 2);
@@ -118,6 +131,13 @@ describe('Create a queue with variable number of arguments', () => {
 
     describe('Push with callback', () => {
       it('Calls callback when task finishes', (done) => {
+        let lastA, lastB, lastC;
+        const q = new TimeQueue((a, b, c, callback) => {
+          lastA = a;
+          lastB = b;
+          lastC = c;
+          process.nextTick(callback);
+        }, { concurrency: 10, every: 1000 });
         q.push('foo', 'bar', undefined, done);
         assert.equal(lastA, 'foo');
         assert.equal(lastB, 'bar');
@@ -173,13 +193,13 @@ describe('Create a queue with a callback called twice', () => {
 
 
 describe('Create a queue then call its `die` method', () => {
-  let n = 0;
-  const q = new TimeQueue((callback) => {
-    n++;
-    process.nextTick(callback);
-  }, { concurrency: 3 });
-
   it('Does not process queued tasks', (done) => {
+    let n = 0;
+    const q = new TimeQueue((callback) => {
+      n++;
+      process.nextTick(callback);
+    }, { concurrency: 3 });
+
     q.push();
     q.push();
     q.push();
