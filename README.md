@@ -18,14 +18,17 @@ const worker = (arg1, arg2, callback) => {
 // create a queue with max 5 concurrency every second
 let q = new TimeQueue(worker, { concurrency: 5, every: 1000 });
 
-// push tasks onto the queue
+// Push tasks onto the queue.
 q.push(42, 24);
 q.push(2, 74);
 
-// optional callback when pushing tasks
-q.push(2, 2, (err) => {
+// Optional callback when pushing tasks.
+q.push(2, 2, (err, result) => {
   // task finished
 });
+
+// Can use promise/await syntax instead.
+let result = await q.push(3, 5);
 ```
 
 
@@ -40,17 +43,17 @@ Creates a new instance of a queue. Worker must be a function with a callback for
 
   // How much time in milliseconds to allow no more than
   // the max number of concurrent tasks to run.
-  // If the max amount of concurrent tasks are finished faster than the limit,
-  // they will be queued.
+  // If the max amount of concurrent tasks finish faster than this time limit,
+  // additional tasks will wait until enough time has passed before starting.
 , every: 0
 
   // Maximum number of tasks to keep in the queue.
   // While full, pushed tasks will be ignored.
 , maxQueued: Infinity
 
-  // If set, will emit an `error` event if a tasks takes too much time.
-  // if callback was given to that task,
-  // it will be called with the error instead.
+  // If set, tasks will error if they take too much time.
+  // if callback was given to that task, it will be called with the error,
+  // otherwise, the returned promise should be `caught`.
 , timeout: 0
 }
 ```
@@ -85,11 +88,6 @@ Returns true if queue is full.
 Empties queue and clears the timeouts TimeQueue sets to keep track of running tasks. Currently running tasks will still complete.
 
 # Events
-
-### Event: 'error'
-* `Error`
-
-Emitted when there is an error processing a task and a callback isn't given to the `push` method.
 
 ### Event: 'full'
 

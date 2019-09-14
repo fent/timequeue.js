@@ -4,7 +4,7 @@ const assert = require('assert');
 
 describe('Create a queue and add to it', () => {
   let full = false;
-  const q = new TimeQueue(process.nextTick, { concurrency: 3 });
+  const q = new TimeQueue(callback => process.nextTick(callback), { concurrency: 3 });
 
   q.on('full', () => {
     full = true;
@@ -79,6 +79,16 @@ describe('Create a queue with variable number of arguments', () => {
     assert.equal(lastC, 'hello');
   });
 
+  it('Returns a promise that fulfills', async () => {
+    const q = new TimeQueue((a, b, c, callback) => {
+      process.nextTick(() => {
+        callback(null, a + b + c);
+      });
+    }, { concurrency: 10, every: 1000 });
+    let result = await q.push(1, 2, 3);
+    assert.equal(result, 6);
+  });
+
   describe('Push with callback', () => {
     it('Calls callback when task finishes', (done) => {
       q.push(3, 2, 1, done);
@@ -125,12 +135,14 @@ describe('Create a queue with a worker that always errors', () => {
     });
   }, { concurrency: 10 });
 
-  it('Emits an `error` event', (done) => {
-    q.push();
-    q.once('error', (err) => {
+  it('Trhows an error', async () => {
+    try {
+      await q.push();
+    } catch (err) {
       assert.equal(err.message, 'gotcha');
-      done();
-    });
+      return;
+    }
+    throw Error('should have thrown');
   });
 
   describe('Push task with callback', () => {

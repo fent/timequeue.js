@@ -26,9 +26,9 @@ describe('Create a queue with a timeout', () => {
       setTimeout(callback, 100);
     }, { timeout: 50 });
 
-    it('Should throw an error', (done) => {
-      q.push(3, 4);
-      q.on('error', (err) => {
+    it('Should reject', (done) => {
+      let p = q.push(3, 4);
+      p.catch((err) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
         assert.equal(err.args[0], 3);
