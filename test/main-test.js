@@ -53,6 +53,76 @@ describe('Create a queue and add to it', () => {
       assert.equal(q.timeout, 0);
     });
   });
+
+  describe('with an async worker', () => {
+    it('Still respects concurrency', (done) => {
+      const q = new TimeQueue(async (a, b) => {
+        return await new Promise((resolve) => {
+          process.nextTick(() => resolve(a + b));
+        });
+      }, { concurrency: 2 });
+      let result1, result2, result3;
+      q.push(1, 2, (err, result) => {
+        assert.ifError(err);
+        result1 = result;
+      });
+      q.push(3, 4, (err, result) => {
+        assert.ifError(err);
+        result2 = result;
+      });
+      q.push(5, 6, (err, result) => {
+        assert.ifError(err);
+        result3 = result;
+      });
+      assert.equal(q.active, 2);
+      q.on('drain', () => {
+        assert.equal(result1, 3);
+        assert.equal(result2, 7);
+        assert.equal(result3, 11);
+        done();
+      });
+    });
+    it('Pushing to worker can be awaited', async () => {
+      const q = new TimeQueue(async (a, b) => {
+        return new Promise((resolve) => {
+          process.nextTick(() => resolve(a + b));
+        });
+      }, { concurrency: 1 });
+      let result1 = await q.push(1, 2);
+      let result2 = await q.push(3, 4);
+      assert.equal(result1, 3);
+      assert.equal(result2, 7);
+    });
+    describe('that errors', () => {
+      it('Calls callback with error', (done) => {
+        const q = new TimeQueue(async (a) => {
+          return new Promise((resolve, reject) => {
+            process.nextTick(() => reject(Error('no: ' + a)));
+          });
+        });
+        q.push('one', (err) => {
+          assert.ok(err);
+          assert.equal(err.message, 'no: one');
+          done();
+        });
+      });
+      it('Throws when awaited', async () => {
+        const q = new TimeQueue(async (a) => {
+          return new Promise((resolve, reject) => {
+            process.nextTick(() => reject(Error('no: ' + a)));
+          });
+        });
+        try {
+          await q.push('okay');
+        } catch (err) {
+          assert.ok(err);
+          assert.equal(err.message, 'no: okay');
+          return;
+        }
+        throw Error('shoult not get here');
+      });
+    });
+  });
 });
 
 

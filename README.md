@@ -15,6 +15,12 @@ const worker = (arg1, arg2, callback) => {
   someAsyncFunction(calculation(arg1, arg2), callback);
 };
 
+// Worker can be an async function.
+const worker = async (arg1) => {
+  await anotherSyncFunction(arg1);
+  return await andAnotherOne();
+};
+
 // create a queue with max 5 concurrency every second
 let q = new TimeQueue(worker, { concurrency: 5, every: 1000 });
 
