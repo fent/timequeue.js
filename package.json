@@ -17,14 +17,14 @@
     "lib"
   ],
   "scripts": {
-    "test": "istanbul cover node_modules/.bin/_mocha -- test/*-test.js"
+    "test": "nyc --reporter=lcov --repoter==text-summary mocha -- test/*-test.js"
   },
   "directories": {
     "lib": "./lib"
   },
   "devDependencies": {
-    "istanbul": "^0.4.5",
     "mocha": "^6.0.0",
+    "nyc": "^14.1.1",
     "sinon": "^7.2.3"
   },
   "engines": {
