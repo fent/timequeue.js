@@ -17,7 +17,7 @@
     "lib"
   ],
   "scripts": {
-    "test": "nyc --reporter=lcov --repoter==text-summary mocha -- test/*-test.js"
+    "test": "nyc --reporter=lcov --reporter=text-summary mocha test/*-test.js"
   },
   "directories": {
     "lib": "./lib"

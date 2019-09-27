@@ -134,7 +134,7 @@ describe('Create a queue with variable number of arguments', () => {
       lastB = b;
       lastC = c;
       process.nextTick(callback);
-    }, { concurrency: 10, every: 1000 });
+    }, { concurrency: 10 });
 
     q.push(1, 2, 3);
     assert.equal(lastA, 1);
@@ -152,7 +152,7 @@ describe('Create a queue with variable number of arguments', () => {
       process.nextTick(() => {
         callback(null, a + b + c);
       });
-    }, { concurrency: 10, every: 1000 });
+    }, { concurrency: 10 });
     let result = await q.push(1, 2, 3);
     assert.equal(result, 6);
   });
@@ -165,7 +165,7 @@ describe('Create a queue with variable number of arguments', () => {
         lastB = b;
         lastC = c;
         process.nextTick(callback);
-      }, { concurrency: 10, every: 1000 });
+      }, { concurrency: 10 });
       q.push(3, 2, 1, done);
       assert.equal(lastA, 3);
       assert.equal(lastB, 2);
@@ -181,7 +181,7 @@ describe('Create a queue with variable number of arguments', () => {
         lastB = b;
         lastC = c;
         process.nextTick(callback);
-      }, { concurrency: 10, every: 1000 });
+      }, { concurrency: 10 });
 
       q.push(4, 2);
       assert.equal(lastA, 4);
@@ -207,7 +207,7 @@ describe('Create a queue with variable number of arguments', () => {
           lastB = b;
           lastC = c;
           process.nextTick(callback);
-        }, { concurrency: 10, every: 1000 });
+        }, { concurrency: 10 });
         q.push('foo', 'bar', undefined, done);
         assert.equal(lastA, 'foo');
         assert.equal(lastB, 'bar');
