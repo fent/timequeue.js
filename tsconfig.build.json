@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "es6",
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

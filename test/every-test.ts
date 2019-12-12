@@ -1,23 +1,23 @@
-const TimeQueue = require('..');
-const assert = require('assert');
-const sinon = require('sinon');
+import TimeQueue from '..';
+import assert from 'assert';
+import sinon from 'sinon';
 
 
 const concurrency = 3;
 const every = 10;
 const jobs = 10;
 
-let clock;
+let clock: sinon.SinonFakeTimers;
 before(() => clock = sinon.useFakeTimers());
 after(() => clock.restore());
 
-const runTest = (type, worker) => {
+const runTest = (type: string, worker: TimeQueue.Worker) => {
   describe('Create a queue with a time limit with ' + type, () => {
     const q = new TimeQueue(worker, { concurrency, every });
 
     it('Amount of concurrent tasks are not executed over the time limit',
       (done) => {
-        let tid, n = 0, m = 0, timedOut = true;
+        let tid: NodeJS.Timer, n = 0, m = 0, timedOut = true;
 
         const checkJobsFinished = () => {
           const diff = q.finished - n;

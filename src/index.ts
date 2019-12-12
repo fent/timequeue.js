@@ -1,40 +1,72 @@
 const EventEmitter = require('events').EventEmitter;
 
+namespace TimeQueue {
+  export type Worker = (...args: any[]) => void | Promise<any>;
+  export interface Options {
+    concurrency?: number;
+    every?: number;
+    maxQueued?: number;
+    timeout?: number;
+  }
+  export interface TaskError extends Error {
+    args: any[];
+  }
+}
 
-module.exports = class TimeQueue extends EventEmitter {
+class TimeQueue extends EventEmitter {
+  // TimeQueue options can be changed after initialization.
+  public worker: TimeQueue.Worker;
+  public concurrency: number;
+  public every: number;
+  public maxQueued: number;
+  public timeout: number;
+
+  private _workerAsync: boolean;
+  private _queue: any[][];
+  private _timers: NodeJS.Timer[];
+
+  // How many tasks are currently active.
+  public active: number;
+
+  // How many tasks are still being waited on,
+  // in case the `every` option was used.
+  public intransit: number;
+
+  // How many tasks are in the queue.
+  public queued: number;
+
+  // How many tasks have finished.
+  public finished: number;
+
+  public static TaskError = class TaskError extends Error {
+    public args: any[];
+  }
+
   /**
    * @constructor
    * @extends {EventEmitter}
    * @param {Function(..., Function(!Error, ...)} worker
-   * @param {Object} options
-   * @param {number} options.concurrency
-   * @param {number} options.time
+   * @param {Object?} options
+   * @param {number?} options.concurrency
+   * @param {number?} options.every
+   * @param {number?} options.maxQueued
+   * @param {number?} options.timeout
    */
-  constructor(worker, options) {
+  constructor(worker: TimeQueue.Worker, options: TimeQueue.Options = {}) {
     super();
 
     this.worker = worker;
     this._workerAsync = worker.constructor.name == 'AsyncFunction';
-    options = options || {};
     this.concurrency = options.concurrency || 1;
     this.every = options.every || 0;
     this.maxQueued = options.maxQueued || Infinity;
     this.timeout = options.timeout || 0;
     this._queue = [];
     this._timers = [];
-
-    // How many tasks are currently active.
-    TimeQueue.prototype.active = 0;
-
-    // How many tasks are still being waited on,
-    // in case the `every` option was used.
-    TimeQueue.prototype.intransit = 0;
-
-    // How many tasks are in the queue.
-    TimeQueue.prototype.queued = 0;
-
-    // How many tasks have finished.
-    TimeQueue.prototype.finished = 0;
+    this.active = 0;
+    this.intransit = 0;
+    this.queued = 0;
+    this.finished = 0;
   }
 
 
@@ -45,7 +77,7 @@ module.exports = class TimeQueue extends EventEmitter {
    * @param {Function(!Error, ...)} callback
    * @return {Promise?}
    */
-  push(...args) {
+  push(...args: any[]) {
     // Returns a promise no `callback` is given.
     if (this._workerAsync && args.length === this.worker.length ||
       !this._workerAsync && args.length < this.worker.length) {
@@ -56,7 +88,7 @@ module.exports = class TimeQueue extends EventEmitter {
             args.push(undefined);
           }
         }
-        this.push(...args, (err, results) => {
+        this.push(...args, (err: Error | null, results: any) => {
           if (err) return reject(err);
           resolve(results);
         });
@@ -96,11 +128,11 @@ module.exports = class TimeQueue extends EventEmitter {
    *
    * @param {Array.<Object>} args
    */
-  async _process(args) {
+  async _process(args: any[]) {
     const callback = args.pop();
     let finished = false;
     let every = ~~this.every;
-    let timedOut;
+    let timedOut: boolean;
 
     if (every) {
       timedOut = false;
@@ -121,9 +153,9 @@ module.exports = class TimeQueue extends EventEmitter {
     let taskTimedOut = false;
     let callbackCalled = false;
     let timeout = ~~this.timeout;
-    let tid;
+    let tid: NodeJS.Timer;
 
-    const taskCallback = (err, result) => {
+    const taskCallback = (err: Error | null, result?: any) => {
       // If this task has timed out, and the callback is called again
       // from the worker, ignore it.
       if (!taskTimedOut) {
@@ -149,7 +181,7 @@ module.exports = class TimeQueue extends EventEmitter {
 
     if (timeout) {
       tid = setTimeout(() => {
-        const err = Error('Task timed out');
+        const err = new TimeQueue.TaskError('Task timed out');
         err.args = args;
         taskCallback(err);
         taskTimedOut = true;
@@ -204,4 +236,6 @@ module.exports = class TimeQueue extends EventEmitter {
     this.active = 0;
     this.queued = 0;
   }
-};
+}
+
+export = TimeQueue;

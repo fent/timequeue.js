@@ -1,6 +1,6 @@
-const TimeQueue = require('..');
-const assert = require('assert');
-const sinon = require('sinon');
+import TimeQueue from '..';
+import assert from 'assert';
+import sinon from 'sinon';
 
 
 describe('Create a queue with a timeout', () => {
@@ -15,7 +15,7 @@ describe('Create a queue with a timeout', () => {
   });
 
   describe('With tasks that lag', () => {
-    let clock;
+    let clock: sinon.SinonFakeTimers;
     before(() => clock = sinon.useFakeTimers());
     after(() => clock.restore());
 
@@ -38,7 +38,7 @@ describe('Create a queue with a timeout', () => {
       const q = new TimeQueue((a, b, callback) => {
         setTimeout(callback, 100);
       }, { timeout: 50 });
-      q.push('hello!', 'world', (err) => {
+      q.push('hello!', 'world', (err: TimeQueue.TaskError | null) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
         assert.equal(err.args[0], 'hello!');

@@ -1,5 +1,5 @@
-const TimeQueue = require('..');
-const assert = require('assert');
+import TimeQueue from '..';
+import assert from 'assert';
 
 
 describe('Create a queue and add to it', () => {
@@ -46,8 +46,8 @@ describe('Create a queue and add to it', () => {
   });
 
   describe('With default options', () => {
-    const q = new TimeQueue(process.nextTick.bind(process));
     it('Has defaults set', () => {
+      const q = new TimeQueue(process.nextTick.bind(process));
       assert.equal(q.concurrency, 1);
       assert.equal(q.every, 0);
       assert.equal(q.timeout, 0);
@@ -61,16 +61,16 @@ describe('Create a queue and add to it', () => {
           process.nextTick(() => resolve(a + b));
         });
       }, { concurrency: 2 });
-      let result1, result2, result3;
-      q.push(1, 2, (err, result) => {
+      let result1: number, result2: number, result3: number;
+      q.push(1, 2, (err: Error | null, result: number) => {
         assert.ifError(err);
         result1 = result;
       });
-      q.push(3, 4, (err, result) => {
+      q.push(3, 4, (err: Error | null, result: number) => {
         assert.ifError(err);
         result2 = result;
       });
-      q.push(5, 6, (err, result) => {
+      q.push(5, 6, (err: Error | null, result: number) => {
         assert.ifError(err);
         result3 = result;
       });
@@ -100,7 +100,7 @@ describe('Create a queue and add to it', () => {
             process.nextTick(() => reject(Error('no: ' + a)));
           });
         });
-        q.push('one', (err) => {
+        q.push('one', (err: Error | null) => {
           assert.ok(err);
           assert.equal(err.message, 'no: one');
           done();
@@ -219,13 +219,10 @@ describe('Create a queue with variable number of arguments', () => {
 
 
 describe('Create a queue with a worker that always errors', () => {
-  const q = new TimeQueue((callback) => {
-    process.nextTick(() => {
-      callback(Error('gotcha'));
-    });
-  }, { concurrency: 10 });
-
   it('Trhows an error', async () => {
+    const q = new TimeQueue((callback) => {
+      process.nextTick(() => { callback(Error('gotcha')); });
+    }, { concurrency: 10 });
     try {
       await q.push();
     } catch (err) {
@@ -237,9 +234,12 @@ describe('Create a queue with a worker that always errors', () => {
 
   describe('Push task with callback', () => {
     it('Does not emit `error`, calls callback with error', (done) => {
+      const q = new TimeQueue((callback) => {
+        process.nextTick(() => { callback(Error('gotcha')); });
+      }, { concurrency: 10 });
       q.once('error', done);
 
-      q.push((err) => {
+      q.push((err: Error | null) => {
         assert.equal(err.message, 'gotcha');
         done();
       });

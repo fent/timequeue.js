@@ -1,5 +1,5 @@
-const TimeQueue = require('..');
-const assert = require('assert');
+import TimeQueue from '..';
+import assert from 'assert';
 
 
 describe('Create a queue and add to it', () => {
