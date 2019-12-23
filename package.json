@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "mocha": "^6.2.0",
-    "nyc": "^14.1.1",
+    "nyc": "^15.0.0",
     "sinon": "^8.0.0"
   },
   "engines": {
