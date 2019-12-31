@@ -88,7 +88,7 @@ class TimeQueue extends EventEmitter {
             args.push(undefined);
           }
         }
-        this.push(...args, (err: Error | null, results: any) => {
+        TimeQueue.prototype.push.call(this, ...args, (err: Error | null, results: any) => {
           if (err) return reject(err);
           resolve(results);
         });
