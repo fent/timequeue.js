@@ -16,8 +16,8 @@ const worker = (arg1, arg2, callback) => {
 
 // Worker can be an async function.
 const worker = async (arg1) => {
-  await anotherSyncFunction(arg1);
-  return await andAnotherOne();
+  let result1 = await anotherSyncFunction(arg1);
+  return andAnotherOne(result1);
 };
 
 // create a queue with max 5 concurrency every second
