@@ -1,4 +1,5 @@
-const EventEmitter = require('events').EventEmitter;
+import { EventEmitter } from 'events';
+import MemoryStore from './mem-store';
 
 namespace TimeQueue {
   export type Worker = (...args: any[]) => void | Promise<any>;
@@ -7,9 +8,17 @@ namespace TimeQueue {
     every?: number;
     maxQueued?: number;
     timeout?: number;
+    store?: Store;
   }
   export interface TaskError extends Error {
     args: any[];
+  }
+  export interface Store {
+    isEmpty: () => Promise<boolean>;
+    getQueued: () => Promise<number>;
+    getNextTask: () => Promise<any[]>;
+    pushTask: (...args: any[]) => void;
+    clear: () => void;
   }
 }
 
@@ -21,9 +30,9 @@ class TimeQueue extends EventEmitter {
   public maxQueued: number;
   public timeout: number;
 
-  private _workerAsync: boolean;
-  private _queue: any[][];
+  private _isWorkerAsync: boolean;
   private _timers: NodeJS.Timer[];
+  public store: TimeQueue.Store;
 
   // How many tasks are currently active.
   public active: number;
@@ -31,9 +40,6 @@ class TimeQueue extends EventEmitter {
   // How many tasks are still being waited on,
   // in case the `every` option was used.
   public intransit: number;
-
-  // How many tasks are in the queue.
-  public queued: number;
 
   // How many tasks have finished.
   public finished: number;
@@ -56,16 +62,15 @@ class TimeQueue extends EventEmitter {
     super();
 
     this.worker = worker;
-    this._workerAsync = worker.constructor.name == 'AsyncFunction';
+    this._isWorkerAsync = worker.constructor.name == 'AsyncFunction';
     this.concurrency = options.concurrency || 1;
     this.every = options.every || 0;
     this.maxQueued = options.maxQueued || Infinity;
     this.timeout = options.timeout || 0;
-    this._queue = [];
+    this.store = options.store || new MemoryStore({ maxQueued: this.maxQueued });
     this._timers = [];
     this.active = 0;
     this.intransit = 0;
-    this.queued = 0;
     this.finished = 0;
   }
 
@@ -77,26 +82,22 @@ class TimeQueue extends EventEmitter {
    * @param {Function(!Error, ...)} callback
    * @return {Promise?}
    */
-  push(...args: any[]) {
-    // Returns a promise no `callback` is given.
-    if (this._workerAsync && args.length === this.worker.length ||
-      !this._workerAsync && args.length < this.worker.length) {
+  async push(...args: any[]) {
+    // Returns a promise when no `callback` is given.
+    if (this._isWorkerAsync && args.length === this.worker.length ||
+      !this._isWorkerAsync && args.length < this.worker.length) {
       return new Promise((resolve, reject) => {
         // Add any missing arguments.
-        if (!this._workerAsync) {
+        if (!this._isWorkerAsync) {
           while (args.length < this.worker.length - 1) {
             args.push(undefined);
           }
         }
-        TimeQueue.prototype.push.call(this, ...args, (err: Error | null, results: any) => {
+        this.push(...args, (err: Error | null, results: any) => {
           if (err) return reject(err);
           resolve(results);
         });
       });
-    }
-
-    if (this.isFull()) {
-      return;
     }
 
     if (this.intransit < this.concurrency) {
@@ -105,21 +106,10 @@ class TimeQueue extends EventEmitter {
       if (this.intransit === this.concurrency) {
         this.emit('full');
       }
-      this._process(args);
+      await this._process(args);
     } else {
-      this._queue.push(args);
-      this.queued++;
+      await this.store.pushTask(args);
     }
-  }
-
-
-  /**
-   * Returns true if queue is full.
-   *
-   * @return {boolean}
-   */
-  isFull() {
-    return this.maxQueued === this.queued;
   }
 
 
@@ -132,13 +122,13 @@ class TimeQueue extends EventEmitter {
     const callback = args.pop();
     let finished = false;
     let every = ~~this.every;
-    let timedOut: boolean;
+    let tookLongerThanEvery: boolean;
 
     if (every) {
-      timedOut = false;
+      tookLongerThanEvery = false;
 
       this._timers.push(setTimeout(() => {
-        timedOut = true;
+        tookLongerThanEvery = true;
         this._timers.shift();
         if (finished) {
           this._next();
@@ -146,7 +136,7 @@ class TimeQueue extends EventEmitter {
       }, every));
 
     } else {
-      timedOut = true;
+      tookLongerThanEvery = true;
     }
 
     // If `timeout` option is set, set a timeout to check the task doesn't lag.
@@ -174,7 +164,7 @@ class TimeQueue extends EventEmitter {
       callback(err, result);
 
       finished = true;
-      if (timedOut) {
+      if (tookLongerThanEvery) {
         this._next();
       }
     };
@@ -189,7 +179,7 @@ class TimeQueue extends EventEmitter {
     }
 
     // Call the worker.
-    if (this._workerAsync) {
+    if (this._isWorkerAsync) {
       try {
         taskCallback(null, await this.worker(...args));
       } catch (err) {
@@ -208,13 +198,13 @@ class TimeQueue extends EventEmitter {
    * Called when a task finishes. Looks at the queue and processes the next
    * waiting task.
    */
-  _next() {
-    if (this.intransit <= this.concurrency && this._queue.length) {
-      this.queued--;
+  async _next() {
+    let task;
+    if (this.intransit <= this.concurrency && (task = await this.store.getNextTask())) {
       this.active++;
-      this._process(this._queue.shift());
+      await this._process(task);
 
-      if (this._queue.length === 0) {
+      if (await this.store.isEmpty()) {
         this.emit('empty');
       }
 
@@ -229,12 +219,11 @@ class TimeQueue extends EventEmitter {
    * Active tasks will still be completed.
    */
   die() {
-    this._queue = [];
+    this.store.clear();
     this._timers.forEach(clearTimeout);
     this._timers = [];
     this.intransit = 0;
     this.active = 0;
-    this.queued = 0;
   }
 }
 

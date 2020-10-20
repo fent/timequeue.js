@@ -60,31 +60,32 @@ Creates a new instance of a queue. Worker must be a function with a callback for
   // if callback was given to that task, it will be called with the error,
   // otherwise, the returned promise should be `caught`.
 , timeout: 0
+
+  // You can pass a custom store to share tasks between several queues.
+  // Default is MemoryStore from `src/mem-store.ts`.
+  // Look at `example/redis-store.js` for an example that saves tasks onto redis.
+, store: MemoryStore
 }
 ```
 
 All of these options can later be edited on the queue instance.
 
 ### TimeQueue#active
-
 How many tasks are currently active.
 
 ### TimeQueue#intransit
-
 If you use the `every` option to queue up tasks, this property will be delayed from being updated until there are free spots open for new tasks to begin. `active` will be updated as soon as a task finishes, even if the next one is just a timeout around the corner.
 
-### TimeQueue#queued
-
-How many tasks are currently in the queue.
-
 ### TimeQueue#finished
-
 How many tasks have finished in total.
 
-### TimeQueue#push(data..., [callback])
+### async TimeQueue#push(data..., [callback])
 Pushes a new task to the queue. Any number of arguments can be given. An optional callback can also be given as the last parameter. The callback will be called when the task is finished or if there was any error running the worker.
 
 If the queue is full, pushed tasks will be ignored.
+
+### async TimeQueue#store.getQueued()
+How many tasks are currently in the queue.
 
 ### TimeQueue#isFull()
 Returns true if queue is full.

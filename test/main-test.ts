@@ -4,43 +4,43 @@ import assert from 'assert';
 
 describe('Create a queue and add to it', () => {
   it('Does not execute more tasks than its concurrency', (done) => {
-    const q = new TimeQueue(callback => process.nextTick(callback), { concurrency: 3 });
+    const q = new TimeQueue(callback => { setTimeout(callback, 10); }, { concurrency: 3 });
 
     let full = false;
-    q.on('full', () => { full = true; });
+    q.on('full', () => {
+      full = true;
+      assert.equal(q.active, 3);
+    });
 
     q.push();
     assert.equal(q.active, 1);
     assert.equal(full, false);
-    assert.equal(q.queued, 0);
 
     q.push();
     assert.equal(q.active, 2);
     assert.equal(full, false);
-    assert.equal(q.queued, 0);
 
     q.push();
     assert.equal(q.active, 3);
     assert.equal(full, true);
-    assert.equal(q.queued, 0);
+
+    // Should be full here.
 
     q.push();
     assert.equal(q.active, 3);
     assert.equal(full, true);
-    assert.equal(q.queued, 1);
 
     q.push();
     assert.equal(q.active, 3);
     assert.equal(full, true);
-    assert.equal(q.queued, 2);
 
     q.push();
     assert.equal(q.active, 3);
     assert.equal(full, true);
-    assert.equal(q.queued, 3);
 
-    q.on('drain', () => {
+    q.on('drain', async() => {
       assert.equal(q.active, 0);
+      assert.equal(await q.store.getQueued(), 0);
       done();
     });
   });
