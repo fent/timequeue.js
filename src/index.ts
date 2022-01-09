@@ -183,7 +183,7 @@ class TimeQueue extends EventEmitter {
       try {
         taskCallback(null, await this.worker(...args));
       } catch (err) {
-        taskCallback(err);
+        taskCallback(err as Error);
       }
     } else {
       // Add custom callback to args.

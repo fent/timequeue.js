@@ -15,7 +15,7 @@ describe('Create a queue with a timeout', () => {
 
   describe('With tasks that lag', () => {
     it('Should reject', (done) => {
-      const q = new TimeQueue((a, b, callback) => {
+      const q = new TimeQueue((_a, _b, callback) => {
         setTimeout(callback, 100);
       }, { timeout: 30 });
       let p = q.push(3, 4);
@@ -29,7 +29,7 @@ describe('Create a queue with a timeout', () => {
     });
 
     it('Should call the callback with the error', (done) => {
-      const q = new TimeQueue((a, b, callback) => {
+      const q = new TimeQueue((_a, _b, callback) => {
         setTimeout(callback, 100);
       }, { timeout: 30 });
       q.push('hello!', 'world', (err: TimeQueue.TaskError | null) => {

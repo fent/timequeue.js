@@ -96,7 +96,7 @@ describe('Create a queue and add to it', () => {
     describe('that errors', () => {
       it('Calls callback with error', (done) => {
         const q = new TimeQueue(async (a) => {
-          return new Promise((resolve, reject) => {
+          return new Promise((_resolve, reject) => {
             process.nextTick(() => reject(Error('no: ' + a)));
           });
         });
@@ -108,7 +108,7 @@ describe('Create a queue and add to it', () => {
       });
       it('Throws when awaited', async () => {
         const q = new TimeQueue(async (a) => {
-          return new Promise((resolve, reject) => {
+          return new Promise((_resolve, reject) => {
             process.nextTick(() => reject(Error('no: ' + a)));
           });
         });
@@ -116,7 +116,7 @@ describe('Create a queue and add to it', () => {
           await q.push('okay');
         } catch (err) {
           assert.ok(err);
-          assert.equal(err.message, 'no: okay');
+          assert.equal((err as Error).message, 'no: okay');
           return;
         }
         throw Error('shoult not get here');
@@ -219,17 +219,17 @@ describe('Create a queue with variable number of arguments', () => {
 
 
 describe('Create a queue with a worker that always errors', () => {
-  it('Trhows an error', async () => {
+  it('Throws an error', async () => {
     const q = new TimeQueue((callback) => {
       process.nextTick(() => { callback(Error('gotcha')); });
     }, { concurrency: 10 });
     try {
       await q.push();
     } catch (err) {
-      assert.equal(err.message, 'gotcha');
+      assert.equal((err as Error).message, 'gotcha');
       return;
     }
-    throw Error('should have thrown');
+    throw Error('should have thrown an earlier error');
   });
 
   describe('Push task with callback', () => {
