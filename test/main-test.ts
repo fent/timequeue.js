@@ -87,11 +87,13 @@ describe('Create a queue and add to it', () => {
         return new Promise((resolve) => {
           process.nextTick(() => resolve(a + b));
         });
-      }, { concurrency: 1 });
+      }, { concurrency: 1, every: 100 });
       let result1 = await q.push(1, 2);
       let result2 = await q.push(3, 4);
+      let result3 = await q.push(5, 6);
       assert.equal(result1, 3);
       assert.equal(result2, 7);
+      assert.equal(result3, 11);
     });
     describe('that errors', () => {
       it('Calls callback with error', (done) => {

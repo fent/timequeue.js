@@ -35,14 +35,14 @@ class TimeQueue extends EventEmitter {
   public store: TimeQueue.Store;
 
   // How many tasks are currently active.
-  public active: number;
+  public active = 0;
 
   // How many tasks are still being waited on,
   // in case the `every` option was used.
-  public intransit: number;
+  public intransit = 0;
 
   // How many tasks have finished.
-  public finished: number;
+  public finished = 0;
 
   public static TaskError = class TaskError extends Error {
     public args: any[];
@@ -69,9 +69,6 @@ class TimeQueue extends EventEmitter {
     this.timeout = options.timeout || 0;
     this.store = options.store || new MemoryStore({ maxQueued: this.maxQueued });
     this._timers = [];
-    this.active = 0;
-    this.intransit = 0;
-    this.finished = 0;
   }
 
 
