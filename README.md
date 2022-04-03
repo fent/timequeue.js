@@ -84,7 +84,7 @@ Pushes a new task to the queue. Any number of arguments can be given. An optiona
 
 If the queue is full, pushed tasks will be ignored.
 
-### async TimeQueue#store.getQueued()
+### async TimeQueue#store.getQueueLen()
 How many tasks are currently in the queue.
 
 ### TimeQueue#isFull()

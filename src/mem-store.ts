@@ -7,10 +7,7 @@ export default class MemoryStore implements Store {
     this.maxQueued = options.maxQueued;
     this._queue = [];
   }
-  async isEmpty() {
-    return this._queue.length === 0;
-  }
-  async getQueued() {
+  async getQueueLen() {
     return this._queue.length;
   }
   async getNextTask() {

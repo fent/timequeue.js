@@ -3,9 +3,8 @@ export class StoreOptions {
 }
 
 export interface Store {
-  isEmpty(): Promise<boolean>;
-  getQueued(): Promise<number>;
+  getQueueLen(): Promise<number>;
   getNextTask(): Promise<any[]>;
-  pushTask(...args: any[]): void;
+  pushTask(...args: any[]): Promise<void>;
   clear(): Promise<void>;
 }

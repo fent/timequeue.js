@@ -40,7 +40,7 @@ describe('Create a queue and add to it', () => {
 
     q.on('drain', async() => {
       assert.equal(q.active, 0);
-      assert.equal(await q.store.getQueued(), 0);
+      assert.equal(await q.store.getQueueLen(), 0);
       done();
     });
   });

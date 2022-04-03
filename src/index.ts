@@ -3,7 +3,7 @@ import { Store } from './store';
 import MemoryStore from './mem-store';
 
 
-export { Store } from './store'
+export { Store, StoreOptions } from './store'
 export type Worker = (...args: any[]) => void | Promise<any>;
 export interface Options {
   concurrency?: number;
@@ -195,7 +195,7 @@ export default class TimeQueue extends EventEmitter {
       this.active++;
       await this._process(task);
 
-      if (await this.store.isEmpty()) {
+      if (await this.store.getQueueLen() === 0) {
         this.emit('empty');
       }
 
