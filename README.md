@@ -63,7 +63,7 @@ Creates a new instance of a queue. Worker must be a function with a callback for
 
   // You can pass a custom store to share tasks between several queues.
   // Default is MemoryStore from `src/mem-store.ts`.
-  // Look at `example/redis-store.js` for an example that saves tasks onto redis.
+  // Look at `example/redis-store.ts` for an example that saves tasks onto redis.
 , store: MemoryStore
 }
 ```
