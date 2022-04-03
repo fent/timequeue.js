@@ -1,4 +1,4 @@
-import TimeQueue from '..';
+import TimeQueue, { Worker } from '..';
 import assert from 'assert';
 
 
@@ -6,7 +6,7 @@ const concurrency = 3;
 const every = 10;
 const jobs = 10;
 
-const runTest = (type: string, worker: TimeQueue.Worker) => {
+const runTest = (type: string, worker: Worker) => {
   describe('Create a queue with a time limit with ' + type, () => {
     const q = new TimeQueue(worker, { concurrency, every });
 

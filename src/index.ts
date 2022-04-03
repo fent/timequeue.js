@@ -1,30 +1,25 @@
 import { EventEmitter } from 'events';
+import { Store } from './store';
 import MemoryStore from './mem-store';
 
-namespace TimeQueue {
-  export type Worker = (...args: any[]) => void | Promise<any>;
-  export interface Options {
-    concurrency?: number;
-    every?: number;
-    maxQueued?: number;
-    timeout?: number;
-    store?: Store;
-  }
-  export interface TaskError extends Error {
-    args: any[];
-  }
-  export interface Store {
-    isEmpty: () => Promise<boolean>;
-    getQueued: () => Promise<number>;
-    getNextTask: () => Promise<any[]>;
-    pushTask: (...args: any[]) => void;
-    clear: () => void;
-  }
+
+export { Store } from './store'
+export type Worker = (...args: any[]) => void | Promise<any>;
+export interface Options {
+  concurrency?: number;
+  every?: number;
+  maxQueued?: number;
+  timeout?: number;
+  store?: Store;
 }
 
-class TimeQueue extends EventEmitter {
+export class TaskError extends Error {
+  public args: any[];
+}
+
+export default class TimeQueue extends EventEmitter {
   // TimeQueue options can be changed after initialization.
-  public worker: TimeQueue.Worker;
+  public worker: Worker;
   public concurrency: number;
   public every: number;
   public maxQueued: number;
@@ -32,7 +27,7 @@ class TimeQueue extends EventEmitter {
 
   private _isWorkerAsync: boolean;
   private _timers: NodeJS.Timer[];
-  public store: TimeQueue.Store;
+  public store: Store;
 
   // How many tasks are currently active.
   public active = 0;
@@ -44,10 +39,6 @@ class TimeQueue extends EventEmitter {
   // How many tasks have finished.
   public finished = 0;
 
-  public static TaskError = class TaskError extends Error {
-    public args: any[];
-  }
-
   /**
    * @constructor
    * @extends {EventEmitter}
@@ -58,7 +49,7 @@ class TimeQueue extends EventEmitter {
    * @param {number?} options.maxQueued
    * @param {number?} options.timeout
    */
-  constructor(worker: TimeQueue.Worker, options: TimeQueue.Options = {}) {
+  constructor(worker: Worker, options: Options = {}) {
     super();
 
     this.worker = worker;
@@ -90,6 +81,9 @@ class TimeQueue extends EventEmitter {
             args.push(undefined);
           }
         }
+
+        // Calling from the prototype directly fixes an infinute loop bug that
+        // occurs when this method is overwritten by a child class.
         TimeQueue.prototype.push.call(this, ...args, (err: Error | null, results: any) => {
           if (err) return reject(err);
           resolve(results);
@@ -168,7 +162,7 @@ class TimeQueue extends EventEmitter {
 
     if (timeout) {
       tid = setTimeout(() => {
-        const err = new TimeQueue.TaskError('Task timed out');
+        const err = new TaskError('Task timed out');
         err.args = args;
         taskCallback(err);
         taskTimedOut = true;
@@ -215,13 +209,11 @@ class TimeQueue extends EventEmitter {
    * Empties the queue and kills the timers.
    * Active tasks will still be completed.
    */
-  die() {
-    this.store.clear();
+  async die() {
+    await this.store.clear();
     this._timers.forEach(clearTimeout);
     this._timers = [];
     this.intransit = 0;
     this.active = 0;
   }
 }
-
-export = TimeQueue;

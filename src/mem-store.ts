@@ -1,10 +1,9 @@
-export class Options {
-  maxQueued?: number;
-}
-export default class MemoryStore {
+import { Store, StoreOptions } from './store'
+
+export default class MemoryStore implements Store {
   public maxQueued: number;
   private _queue: any[][]
-  constructor(options: Options) {
+  constructor(options: StoreOptions) {
     this.maxQueued = options.maxQueued;
     this._queue = [];
   }

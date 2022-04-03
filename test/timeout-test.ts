@@ -1,4 +1,4 @@
-import TimeQueue from '..';
+import TimeQueue, { TaskError } from '..';
 import assert from 'assert';
 
 
@@ -32,7 +32,7 @@ describe('Create a queue with a timeout', () => {
       const q = new TimeQueue((_a, _b, callback) => {
         setTimeout(callback, 100);
       }, { timeout: 30 });
-      q.push('hello!', 'world', (err: TimeQueue.TaskError | null) => {
+      q.push('hello!', 'world', (err: TaskError | null) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
         assert.equal(err.args[0], 'hello!');
