@@ -1,4 +1,4 @@
-export class StoreOptions {
+export interface StoreOptions {
   maxQueued?: number;
 }
 

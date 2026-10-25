@@ -1,10 +1,14 @@
-import TimeQueue from '..';
 import assert from 'assert';
-
+import TimeQueue from '..';
 
 describe('Create a queue and add to it', () => {
   it('Does not execute more tasks than its concurrency', (done) => {
-    const q = new TimeQueue(callback => { setTimeout(callback, 10); }, { concurrency: 3 });
+    const q = new TimeQueue(
+      (callback) => {
+        setTimeout(callback, 10);
+      },
+      { concurrency: 3 },
+    );
 
     let full = false;
     q.on('full', () => {
@@ -38,7 +42,7 @@ describe('Create a queue and add to it', () => {
     assert.equal(q.active, 3);
     assert.equal(full, true);
 
-    q.on('drain', async() => {
+    q.on('drain', async () => {
       assert.equal(q.active, 0);
       assert.equal(await q.store.getQueueLen(), 0);
       done();
@@ -56,11 +60,14 @@ describe('Create a queue and add to it', () => {
 
   describe('with an async worker', () => {
     it('Still respects concurrency', (done) => {
-      const q = new TimeQueue(async (a, b) => {
-        return await new Promise((resolve) => {
-          process.nextTick(() => resolve(a + b));
-        });
-      }, { concurrency: 2 });
+      const q = new TimeQueue(
+        async (a, b) => {
+          return await new Promise((resolve) => {
+            process.nextTick(() => resolve(a + b));
+          });
+        },
+        { concurrency: 2 },
+      );
       let result1: number, result2: number, result3: number;
       q.push(1, 2, (err: Error | null, result: number) => {
         assert.ifError(err);
@@ -83,14 +90,17 @@ describe('Create a queue and add to it', () => {
       });
     });
     it('Pushing to worker can be awaited', async () => {
-      const q = new TimeQueue(async (a, b) => {
-        return new Promise((resolve) => {
-          process.nextTick(() => resolve(a + b));
-        });
-      }, { concurrency: 1, every: 100 });
-      let result1 = await q.push(1, 2);
-      let result2 = await q.push(3, 4);
-      let result3 = await q.push(5, 6);
+      const q = new TimeQueue(
+        async (a, b) => {
+          return new Promise((resolve) => {
+            process.nextTick(() => resolve(a + b));
+          });
+        },
+        { concurrency: 1, every: 100 },
+      );
+      const result1 = await q.push(1, 2);
+      const result2 = await q.push(3, 4);
+      const result3 = await q.push(5, 6);
       assert.equal(result1, 3);
       assert.equal(result2, 7);
       assert.equal(result3, 11);
@@ -127,16 +137,18 @@ describe('Create a queue and add to it', () => {
   });
 });
 
-
 describe('Create a queue with variable number of arguments', () => {
   it('Calls worker with correct arguments', () => {
-    let lastA, lastB, lastC;
-    const q = new TimeQueue((a, b, c, callback) => {
-      lastA = a;
-      lastB = b;
-      lastC = c;
-      process.nextTick(callback);
-    }, { concurrency: 10 });
+    let lastA: any, lastB: any, lastC: any;
+    const q = new TimeQueue(
+      (a, b, c, callback) => {
+        lastA = a;
+        lastB = b;
+        lastC = c;
+        process.nextTick(callback);
+      },
+      { concurrency: 10 },
+    );
 
     q.push(1, 2, 3);
     assert.equal(lastA, 1);
@@ -150,24 +162,30 @@ describe('Create a queue with variable number of arguments', () => {
   });
 
   it('Returns a promise that fulfills', async () => {
-    const q = new TimeQueue((a, b, c, callback) => {
-      process.nextTick(() => {
-        callback(null, a + b + c);
-      });
-    }, { concurrency: 10 });
-    let result = await q.push(1, 2, 3);
+    const q = new TimeQueue(
+      (a, b, c, callback) => {
+        process.nextTick(() => {
+          callback(null, a + b + c);
+        });
+      },
+      { concurrency: 10 },
+    );
+    const result = await q.push(1, 2, 3);
     assert.equal(result, 6);
   });
 
   describe('Push with callback', () => {
     it('Calls callback when task finishes', (done) => {
-      let lastA, lastB, lastC;
-      const q = new TimeQueue((a, b, c, callback) => {
-        lastA = a;
-        lastB = b;
-        lastC = c;
-        process.nextTick(callback);
-      }, { concurrency: 10 });
+      let lastA: any, lastB: any, lastC: any;
+      const q = new TimeQueue(
+        (a, b, c, callback) => {
+          lastA = a;
+          lastB = b;
+          lastC = c;
+          process.nextTick(callback);
+        },
+        { concurrency: 10 },
+      );
       q.push(3, 2, 1, done);
       assert.equal(lastA, 3);
       assert.equal(lastB, 2);
@@ -177,13 +195,16 @@ describe('Create a queue with variable number of arguments', () => {
 
   describe('Push tasks without all of the arguments', () => {
     it('Considers arguments not provided undefined in the worker', () => {
-      let lastA, lastB, lastC;
-      const q = new TimeQueue((a, b, c, callback) => {
-        lastA = a;
-        lastB = b;
-        lastC = c;
-        process.nextTick(callback);
-      }, { concurrency: 10 });
+      let lastA: any, lastB: any, lastC: any;
+      const q = new TimeQueue(
+        (a, b, c, callback) => {
+          lastA = a;
+          lastB = b;
+          lastC = c;
+          process.nextTick(callback);
+        },
+        { concurrency: 10 },
+      );
 
       q.push(4, 2);
       assert.equal(lastA, 4);
@@ -203,13 +224,16 @@ describe('Create a queue with variable number of arguments', () => {
 
     describe('Push with callback', () => {
       it('Calls callback when task finishes', (done) => {
-        let lastA, lastB, lastC;
-        const q = new TimeQueue((a, b, c, callback) => {
-          lastA = a;
-          lastB = b;
-          lastC = c;
-          process.nextTick(callback);
-        }, { concurrency: 10 });
+        let lastA: any, lastB: any, lastC: any;
+        const q = new TimeQueue(
+          (a, b, c, callback) => {
+            lastA = a;
+            lastB = b;
+            lastC = c;
+            process.nextTick(callback);
+          },
+          { concurrency: 10 },
+        );
         q.push('foo', 'bar', undefined, done);
         assert.equal(lastA, 'foo');
         assert.equal(lastB, 'bar');
@@ -219,12 +243,16 @@ describe('Create a queue with variable number of arguments', () => {
   });
 });
 
-
 describe('Create a queue with a worker that always errors', () => {
   it('Throws an error', async () => {
-    const q = new TimeQueue((callback) => {
-      process.nextTick(() => { callback(Error('gotcha')); });
-    }, { concurrency: 10 });
+    const q = new TimeQueue(
+      (callback) => {
+        process.nextTick(() => {
+          callback(Error('gotcha'));
+        });
+      },
+      { concurrency: 10 },
+    );
     try {
       await q.push();
     } catch (err) {
@@ -236,9 +264,14 @@ describe('Create a queue with a worker that always errors', () => {
 
   describe('Push task with callback', () => {
     it('Does not emit `error`, calls callback with error', (done) => {
-      const q = new TimeQueue((callback) => {
-        process.nextTick(() => { callback(Error('gotcha')); });
-      }, { concurrency: 10 });
+      const q = new TimeQueue(
+        (callback) => {
+          process.nextTick(() => {
+            callback(Error('gotcha'));
+          });
+        },
+        { concurrency: 10 },
+      );
       q.once('error', done);
 
       q.push((err: Error | null) => {
@@ -248,7 +281,6 @@ describe('Create a queue with a worker that always errors', () => {
     });
   });
 });
-
 
 describe('Create a queue with a callback called twice', () => {
   it('Throws an error', (done) => {
@@ -263,14 +295,16 @@ describe('Create a queue with a callback called twice', () => {
   });
 });
 
-
 describe('Create a queue then call its `die` method', () => {
   it('Does not process queued tasks', (done) => {
     let n = 0;
-    const q = new TimeQueue((callback) => {
-      n++;
-      process.nextTick(callback);
-    }, { concurrency: 3 });
+    const q = new TimeQueue(
+      (callback) => {
+        n++;
+        process.nextTick(callback);
+      },
+      { concurrency: 3, every: 100 },
+    );
 
     q.push();
     q.push();

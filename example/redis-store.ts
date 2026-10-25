@@ -1,5 +1,5 @@
-import { Store } from 'timequeue'
 import { createClient, RedisClientType } from 'redis';
+import type { Store } from 'timequeue';
 
 export default class RedisStore implements Store {
   private client: RedsiClientType;

@@ -1,6 +1,5 @@
-import TimeQueue, { Worker } from '..';
 import assert from 'assert';
-
+import TimeQueue, { type Worker } from '..';
 
 const concurrency = 3;
 const every = 10;
@@ -42,11 +41,11 @@ runTest('immediate finish', (taskNum, callback) => {
 });
 
 runTest('finishing time decreasing', (taskNum, callback) => {
-  let ms = taskNum < concurrency ? every + 10 : 0;
+  const ms = taskNum < concurrency ? every + 10 : 0;
   setTimeout(callback.bind(null, taskNum), ms);
 });
 
 runTest('random finishing time', (taskNum, callback) => {
-  let ms = Math.floor(Math.random() * every * 2);
+  const ms = Math.floor(Math.random() * every * 2);
   setTimeout(callback.bind(null, taskNum), ms);
 });

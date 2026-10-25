@@ -1,6 +1,5 @@
-import TimeQueue, { TaskError } from '..';
 import assert from 'assert';
-
+import TimeQueue, { type TaskError } from '..';
 
 describe('Create a queue with a timeout', () => {
   describe('With tasks that finish immediately', () => {
@@ -15,10 +14,13 @@ describe('Create a queue with a timeout', () => {
 
   describe('With tasks that lag', () => {
     it('Should reject', (done) => {
-      const q = new TimeQueue((_a, _b, callback) => {
-        setTimeout(callback, 100);
-      }, { timeout: 30 });
-      let p = q.push(3, 4);
+      const q = new TimeQueue(
+        (_a, _b, callback) => {
+          setTimeout(callback, 100);
+        },
+        { timeout: 30 },
+      );
+      const p = q.push(3, 4);
       p.catch((err) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
@@ -29,9 +31,12 @@ describe('Create a queue with a timeout', () => {
     });
 
     it('Should call the callback with the error', (done) => {
-      const q = new TimeQueue((_a, _b, callback) => {
-        setTimeout(callback, 100);
-      }, { timeout: 30 });
+      const q = new TimeQueue(
+        (_a, _b, callback) => {
+          setTimeout(callback, 100);
+        },
+        { timeout: 30 },
+      );
       q.push('hello!', 'world', (err: TaskError | null) => {
         assert(err);
         assert.equal(err.message, 'Task timed out');
