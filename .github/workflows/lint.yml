@@ -7,14 +7,14 @@ permissions:
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: biomejs/setup-biome@v2
         with:
-          node-version: lts/*
+          version: 2.5.15
 
       - name: Run Biome
-        run: npx @biomejs/biome ci .
+        run: biome ci .
