@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import TimeQueue from '..';
 
 describe('Create a queue and add to it', () => {
@@ -109,7 +109,7 @@ describe('Create a queue and add to it', () => {
       it('Calls callback with error', (done) => {
         const q = new TimeQueue(async (a) => {
           return new Promise((_resolve, reject) => {
-            process.nextTick(() => reject(Error('no: ' + a)));
+            process.nextTick(() => reject(Error(`no: ${a}`)));
           });
         });
         q.push('one', (err: Error | null) => {
@@ -121,7 +121,7 @@ describe('Create a queue and add to it', () => {
       it('Throws when awaited', async () => {
         const q = new TimeQueue(async (a) => {
           return new Promise((_resolve, reject) => {
-            process.nextTick(() => reject(Error('no: ' + a)));
+            process.nextTick(() => reject(Error(`no: ${a}`)));
           });
         });
         try {
@@ -139,7 +139,9 @@ describe('Create a queue and add to it', () => {
 
 describe('Create a queue with variable number of arguments', () => {
   it('Calls worker with correct arguments', () => {
-    let lastA: any, lastB: any, lastC: any;
+    let lastA: unknown;
+    let lastB: unknown;
+    let lastC: unknown;
     const q = new TimeQueue(
       (a, b, c, callback) => {
         lastA = a;
@@ -176,7 +178,9 @@ describe('Create a queue with variable number of arguments', () => {
 
   describe('Push with callback', () => {
     it('Calls callback when task finishes', (done) => {
-      let lastA: any, lastB: any, lastC: any;
+      let lastA: unknown;
+      let lastB: unknown;
+      let lastC: unknown;
       const q = new TimeQueue(
         (a, b, c, callback) => {
           lastA = a;
@@ -195,7 +199,9 @@ describe('Create a queue with variable number of arguments', () => {
 
   describe('Push tasks without all of the arguments', () => {
     it('Considers arguments not provided undefined in the worker', () => {
-      let lastA: any, lastB: any, lastC: any;
+      let lastA: unknown;
+      let lastB: unknown;
+      let lastC: unknown;
       const q = new TimeQueue(
         (a, b, c, callback) => {
           lastA = a;
@@ -224,7 +230,9 @@ describe('Create a queue with variable number of arguments', () => {
 
     describe('Push with callback', () => {
       it('Calls callback when task finishes', (done) => {
-        let lastA: any, lastB: any, lastC: any;
+        let lastA: unknown;
+        let lastB: unknown;
+        let lastC: unknown;
         const q = new TimeQueue(
           (a, b, c, callback) => {
             lastA = a;

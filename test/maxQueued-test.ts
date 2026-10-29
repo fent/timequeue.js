@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import TimeQueue from '..';
 
 describe('Create a queue and add to it', () => {

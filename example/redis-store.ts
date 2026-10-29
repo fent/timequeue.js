@@ -1,4 +1,4 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 import type { Store } from 'timequeue';
 
 export default class RedisStore implements Store {
@@ -16,6 +16,7 @@ export default class RedisStore implements Store {
   async getNextTask() {
     return this.client.LPOP(this.key);
   }
+  // biome-ignore lint/suspicious/noExplicitAny: arbitrary task arguments
   async pushTask(args: any[]) {
     return this.client.RPUSH(this.key, args);
   }

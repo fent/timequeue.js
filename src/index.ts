@@ -1,8 +1,10 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import MemoryStore from './mem-store';
 import type { Store } from './store';
 
 export type { Store, StoreOptions } from './store';
+// biome-ignore lint/suspicious/noConfusingVoidType: void indicates synchronous callback-based worker
+// biome-ignore lint/suspicious/noExplicitAny: Worker accepts functions with any parameter and return types
 export type Worker = (...args: any[]) => void | Promise<any>;
 export interface Options {
   concurrency?: number;
@@ -13,6 +15,7 @@ export interface Options {
 }
 
 export class TaskError extends Error {
+  // biome-ignore lint/suspicious/noExplicitAny: arbitrary task arguments
   public args: any[];
 }
 
@@ -69,6 +72,7 @@ export default class TimeQueue extends EventEmitter {
    * @param {Function(!Error, ...)} callback
    * @return {Promise?}
    */
+  // biome-ignore lint/suspicious/noExplicitAny: tasks accept arbitrary arguments
   async push(...args: any[]) {
     // Returns a promise when no `callback` is given.
     if (
@@ -88,6 +92,7 @@ export default class TimeQueue extends EventEmitter {
         TimeQueue.prototype.push.call(
           this,
           ...args,
+          // biome-ignore lint/suspicious/noExplicitAny: callback can return arbitrary results
           (err: Error | null, results: any) => {
             if (err) return reject(err);
             resolve(results);
@@ -113,6 +118,7 @@ export default class TimeQueue extends EventEmitter {
    *
    * @param {Array.<Object>} args
    */
+  // biome-ignore lint/suspicious/noExplicitAny: task args are dynamically typed
   async _process(args: any[]) {
     const callback = args.pop();
     let finished = false;
@@ -141,6 +147,7 @@ export default class TimeQueue extends EventEmitter {
     const timeout = ~~this.timeout;
     let tid: NodeJS.Timeout;
 
+    // biome-ignore lint/suspicious/noExplicitAny: worker result is arbitrary
     const taskCallback = (err: Error | null, result?: any) => {
       // If this task has timed out, and the callback is called again
       // from the worker, ignore it.
