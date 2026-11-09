@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import TimeQueue from '..';
+import TimeQueue from '../src';
 
 describe('Create a queue and add to it', () => {
   it('Ignores tasks pushed after it is full', (done) => {

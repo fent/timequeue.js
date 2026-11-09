@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import TimeQueue, { type TaskError } from '..';
+import TimeQueue, { type TaskError } from '../src';
 
 describe('Create a queue with a timeout', () => {
   describe('With tasks that finish immediately', () => {

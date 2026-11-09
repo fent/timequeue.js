@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import TimeQueue, { type Worker } from '..';
+import TimeQueue, { type Worker } from '../src';
 
 const concurrency = 3;
 const every = 10;

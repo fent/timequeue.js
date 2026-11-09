@@ -1,25 +1,18 @@
 import { EventEmitter } from 'node:events';
 import MemoryStore from './mem-store';
-import type { Store } from './store';
+import type * as store from './store';
 
-export type { Store, StoreOptions } from './store';
-// biome-ignore lint/suspicious/noExplicitAny: worker functions accept arbitrary parameters
-export type Worker = (...args: any[]) => unknown;
-export interface Options {
-  concurrency?: number;
-  every?: number;
-  maxQueued?: number;
-  timeout?: number;
-  store?: Store;
-}
-
-export class TaskError extends Error {
+class TaskError extends Error {
   public args: unknown[];
 }
 
-export default class TimeQueue extends EventEmitter {
+class TimeQueue extends EventEmitter {
+  static TimeQueue = TimeQueue;
+  static default = TimeQueue;
+  static TaskError = TaskError;
+
   // TimeQueue options can be changed after initialization.
-  public worker: Worker;
+  public worker: TimeQueue.Worker;
   public concurrency: number;
   public every: number;
   public maxQueued: number;
@@ -27,7 +20,7 @@ export default class TimeQueue extends EventEmitter {
 
   private _isWorkerAsync: boolean;
   private _timers: NodeJS.Timeout[];
-  public store: Store;
+  public store: TimeQueue.Store;
 
   // How many tasks are currently active.
   public active = 0;
@@ -39,7 +32,7 @@ export default class TimeQueue extends EventEmitter {
   // How many tasks have finished.
   public finished = 0;
 
-  constructor(worker: Worker, options: Options = {}) {
+  constructor(worker: TimeQueue.Worker, options: TimeQueue.Options = {}) {
     super();
 
     this.worker = worker;
@@ -216,3 +209,26 @@ export default class TimeQueue extends EventEmitter {
     this.active = 0;
   }
 }
+
+namespace TimeQueue {
+  export type TaskError = typeof TaskError.prototype;
+  // biome-ignore lint/suspicious/noExplicitAny: worker functions accept arbitrary parameters
+  export type Worker = (...args: any[]) => unknown;
+  export interface Options {
+    concurrency?: number;
+    every?: number;
+    maxQueued?: number;
+    timeout?: number;
+    store?: store.Store;
+  }
+  export type Store = store.Store;
+  export type StoreOptions = store.StoreOptions;
+}
+
+// Statically recognizable exports for Node.js cjs-module-lexer (ESM named import support)
+module.exports = TimeQueue;
+module.exports.default = TimeQueue;
+module.exports.TimeQueue = TimeQueue;
+module.exports.TaskError = TaskError;
+
+export = TimeQueue;
