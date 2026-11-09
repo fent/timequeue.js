@@ -14,5 +14,6 @@
     "alwaysStrict": true,
     "esModuleInterop": true,
     "outDir": "spec"
-  }
+  },
+  "exclude": ["example", "dist"]
 }

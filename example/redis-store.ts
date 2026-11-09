@@ -1,8 +1,16 @@
 import { createClient } from 'redis';
 import type { Store } from 'timequeue';
 
+interface RedisClient {
+  LLEN(key: string): Promise<number>;
+  LPOP(key: string): Promise<unknown[]>;
+  RPUSH(key: string, args: unknown[]): Promise<number>;
+  DEL(key: string): Promise<number>;
+  connect(): Promise<void>;
+}
+
 export default class RedisStore implements Store {
-  private client: RedsiClientType;
+  private client: RedisClient;
   private key = 'myqueue';
   constructor() {
     this.client = createClient({
@@ -16,8 +24,7 @@ export default class RedisStore implements Store {
   async getNextTask() {
     return this.client.LPOP(this.key);
   }
-  // biome-ignore lint/suspicious/noExplicitAny: arbitrary task arguments
-  async pushTask(args: any[]) {
+  async pushTask(args: unknown[]) {
     return this.client.RPUSH(this.key, args);
   }
   async clear() {
