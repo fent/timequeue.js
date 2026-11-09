@@ -41,16 +41,6 @@ export default class TimeQueue extends EventEmitter {
   // How many tasks have finished.
   public finished = 0;
 
-  /**
-   * @constructor
-   * @extends {EventEmitter}
-   * @param {Function(..., Function(!Error, ...)} worker
-   * @param {Object?} options
-   * @param {number?} options.concurrency
-   * @param {number?} options.every
-   * @param {number?} options.maxQueued
-   * @param {number?} options.timeout
-   */
   constructor(worker: Worker, options: Options = {}) {
     super();
 
@@ -67,10 +57,6 @@ export default class TimeQueue extends EventEmitter {
 
   /**
    * Pushes a task onto the queue.
-   *
-   * @param {Object} ...args
-   * @param {Function(!Error, ...)} callback
-   * @return {Promise?}
    */
   // biome-ignore lint/suspicious/noExplicitAny: tasks accept arbitrary arguments
   async push(...args: any[]) {
@@ -115,8 +101,6 @@ export default class TimeQueue extends EventEmitter {
 
   /**
    * Starts a task
-   *
-   * @param {Array.<Object>} args
    */
   // biome-ignore lint/suspicious/noExplicitAny: task args are dynamically typed
   async _process(args: any[]) {
