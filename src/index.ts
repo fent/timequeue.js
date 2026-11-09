@@ -3,9 +3,8 @@ import MemoryStore from './mem-store';
 import type { Store } from './store';
 
 export type { Store, StoreOptions } from './store';
-// biome-ignore lint/suspicious/noConfusingVoidType: void indicates synchronous callback-based worker
-// biome-ignore lint/suspicious/noExplicitAny: Worker accepts functions with any parameter and return types
-export type Worker = (...args: any[]) => void | Promise<any>;
+// biome-ignore lint/suspicious/noExplicitAny: worker functions accept arbitrary parameters
+export type Worker = (...args: any[]) => unknown;
 export interface Options {
   concurrency?: number;
   every?: number;
@@ -15,8 +14,7 @@ export interface Options {
 }
 
 export class TaskError extends Error {
-  // biome-ignore lint/suspicious/noExplicitAny: arbitrary task arguments
-  public args: any[];
+  public args: unknown[];
 }
 
 export default class TimeQueue extends EventEmitter {
@@ -58,8 +56,7 @@ export default class TimeQueue extends EventEmitter {
   /**
    * Pushes a task onto the queue.
    */
-  // biome-ignore lint/suspicious/noExplicitAny: tasks accept arbitrary arguments
-  async push(...args: any[]) {
+  async push(...args: unknown[]) {
     // Returns a promise when no `callback` is given.
     if (
       (this._isWorkerAsync && args.length === this.worker.length) ||
@@ -78,8 +75,7 @@ export default class TimeQueue extends EventEmitter {
         TimeQueue.prototype.push.call(
           this,
           ...args,
-          // biome-ignore lint/suspicious/noExplicitAny: callback can return arbitrary results
-          (err: Error | null, results: any) => {
+          (err: Error | null, results: unknown) => {
             if (err) return reject(err);
             resolve(results);
           },
@@ -102,9 +98,11 @@ export default class TimeQueue extends EventEmitter {
   /**
    * Starts a task
    */
-  // biome-ignore lint/suspicious/noExplicitAny: task args are dynamically typed
-  async _process(args: any[]) {
-    const callback = args.pop();
+  async _process(args: unknown[]) {
+    const callback = args.pop() as (
+      err: Error | null,
+      result?: unknown,
+    ) => void;
     let finished = false;
     const every = ~~this.every;
     let tookLongerThanEvery: boolean;
@@ -131,8 +129,7 @@ export default class TimeQueue extends EventEmitter {
     const timeout = ~~this.timeout;
     let tid: NodeJS.Timeout;
 
-    // biome-ignore lint/suspicious/noExplicitAny: worker result is arbitrary
-    const taskCallback = (err: Error | null, result?: any) => {
+    const taskCallback = (err: Error | null, result?: unknown) => {
       // If this task has timed out, and the callback is called again
       // from the worker, ignore it.
       if (!taskTimedOut) {
@@ -168,7 +165,10 @@ export default class TimeQueue extends EventEmitter {
     // Call the worker.
     if (this._isWorkerAsync) {
       try {
-        taskCallback(null, await this.worker(...args));
+        taskCallback(
+          null,
+          await (this.worker as (...args: unknown[]) => unknown)(...args),
+        );
       } catch (err) {
         taskCallback(err as Error);
       }
@@ -176,7 +176,7 @@ export default class TimeQueue extends EventEmitter {
       // Add custom callback to args.
       const args2 = args.slice();
       args2.push(taskCallback);
-      this.worker(...args2);
+      (this.worker as (...args: unknown[]) => unknown)(...args2);
     }
   }
 
