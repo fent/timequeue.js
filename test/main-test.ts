@@ -1,6 +1,53 @@
 import assert from 'node:assert';
 import TimeQueue from '../src';
 
+const waitFor = async (predicate: () => boolean): Promise<void> => {
+  while (!predicate()) {
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+};
+
+class DeferredStore implements TimeQueue.Store {
+  public tasks: unknown[][] = [];
+  public resolveNext?: (task: unknown[] | undefined) => void;
+  private _onNextRequested!: () => void;
+  public nextRequested = new Promise<void>((resolve) => {
+    this._onNextRequested = resolve;
+  });
+
+  async getNextTask() {
+    this._onNextRequested();
+    return new Promise<unknown[] | undefined>((resolve) => {
+      this.resolveNext = resolve;
+    });
+  }
+
+  async getQueueLen() {
+    return this.tasks.length;
+  }
+
+  async pushTask(args: unknown[]) {
+    this.tasks.push(args);
+  }
+
+  async clear() {
+    this.tasks = [];
+  }
+}
+
+class SlowClearStore extends DeferredStore {
+  public clearStarted = false;
+  public resolveClear?: () => void;
+
+  async clear() {
+    this.tasks = [];
+    this.clearStarted = true;
+    await new Promise<void>((resolve) => {
+      this.resolveClear = resolve;
+    });
+  }
+}
+
 describe('Create a queue and add to it', () => {
   it('Does not execute more tasks than its concurrency', (done) => {
     const q = new TimeQueue(
@@ -304,6 +351,121 @@ describe('Create a queue with a callback called twice', () => {
 });
 
 describe('Create a queue then call its `die` method', () => {
+  it('Keeps counters and concurrency consistent with a running task', async () => {
+    let running = 0;
+    let maxRunning = 0;
+    const q = new TimeQueue(
+      async () => {
+        running++;
+        maxRunning = Math.max(maxRunning, running);
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        running--;
+      },
+      { concurrency: 1 },
+    );
+
+    q.push();
+    await waitFor(() => running === 1);
+    await q.die();
+    await waitFor(
+      () => q.finished === 1 && q.active === 0 && q.intransit === 0,
+    );
+
+    assert.equal(q.active, 0);
+    assert.equal(q.intransit, 0);
+
+    maxRunning = 0;
+    q.push();
+    q.push();
+    q.push();
+    await waitFor(() => running === 1);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(maxRunning, 1);
+
+    await waitFor(() => q.finished === 4 && running === 0);
+  });
+
+  it('Waits for store.clear before starting tasks', async () => {
+    const store = new SlowClearStore();
+    let started = 0;
+    const q = new TimeQueue(
+      async () => {
+        started++;
+        await new Promise((resolve) => setImmediate(resolve));
+      },
+      { concurrency: 1, store },
+    );
+
+    const dying = q.die();
+    await waitFor(() => store.clearStarted);
+    const pushed = q.push();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(started, 0);
+
+    store.resolveClear?.();
+    await dying;
+    await pushed;
+
+    assert.equal(started, 1);
+    assert.equal(q.active, 0);
+  });
+
+  it('Ignores a task being fetched when die is called', async () => {
+    const store = new DeferredStore();
+    let releaseFirst!: () => void;
+    const firstGate = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    let started = 0;
+    const q = new TimeQueue(
+      async () => {
+        started++;
+        await firstGate;
+      },
+      { concurrency: 1, store },
+    );
+
+    const first = q.push();
+    void q.push();
+    releaseFirst();
+    await first;
+    await store.nextRequested;
+    await q.die();
+    store.resolveNext?.(undefined);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(started, 1);
+    assert.equal(q.active, 0);
+    assert.equal(q.intransit, 0);
+  });
+
+  it('Ignores a fetched task that finishes after die is called', async () => {
+    const releases: Array<() => void> = [];
+    let started = 0;
+    const q = new TimeQueue(
+      async () => {
+        started++;
+        await new Promise<void>((resolve) => releases.push(resolve));
+      },
+      { concurrency: 1 },
+    );
+
+    const first = q.push();
+    const second = q.push();
+    releases[0]();
+    await first;
+    await waitFor(() => started === 2);
+    await q.die();
+    releases[1]();
+    await waitFor(() => q.finished === 2);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(started, 2);
+    assert.equal(q.active, 0);
+    assert.equal(q.intransit, 0);
+    await second;
+  });
+
   it('Does not process queued tasks', (done) => {
     let n = 0;
     const q = new TimeQueue(

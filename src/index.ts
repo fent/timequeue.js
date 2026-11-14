@@ -20,6 +20,8 @@ class TimeQueue extends EventEmitter {
 
   private _isWorkerAsync: boolean;
   private _timers: NodeJS.Timeout[];
+  private _generation = 0;
+  private _clearing: Promise<void> | null = null;
   public store: TimeQueue.Store;
 
   // How many tasks are currently active.
@@ -50,6 +52,10 @@ class TimeQueue extends EventEmitter {
    * Pushes a task onto the queue.
    */
   async push(...args: unknown[]) {
+    while (this._clearing) {
+      await this._clearing;
+    }
+
     // Returns a promise when no `callback` is given.
     if (
       (this._isWorkerAsync && args.length === this.worker.length) ||
@@ -96,6 +102,7 @@ class TimeQueue extends EventEmitter {
       err: Error | null,
       result?: unknown,
     ) => void;
+    const generation = this._generation;
     let finished = false;
     const every = ~~this.every;
     let tookLongerThanEvery: boolean;
@@ -136,12 +143,14 @@ class TimeQueue extends EventEmitter {
         throw Error('Callback from worker should only be called once');
       }
       callbackCalled = true;
+      // `finished` is a lifetime count, so stale tasks still count here.
       this.finished++;
-      this.active--;
+      const isCurrent = generation === this._generation;
+      if (isCurrent) this.active--;
       callback(err, result);
 
       finished = true;
-      if (tookLongerThanEvery) {
+      if (isCurrent && tookLongerThanEvery) {
         this._next();
       }
     };
@@ -178,12 +187,15 @@ class TimeQueue extends EventEmitter {
    * waiting task.
    */
   async _next() {
+    const generation = this._generation;
     if (this.intransit <= this.concurrency) {
       const task = await this.store.getNextTask();
+      if (generation !== this._generation) return;
       if (task) {
         this.active++;
         await this._process(task);
 
+        if (generation !== this._generation) return;
         if ((await this.store.getQueueLen()) === 0) {
           this.emit('empty');
         }
@@ -197,16 +209,25 @@ class TimeQueue extends EventEmitter {
 
   /**
    * Empties the queue and kills the timers.
-   * Active tasks will still be completed.
+   * Active tasks will still be completed, but no longer update queue state.
    */
   async die() {
-    await this.store.clear();
+    this._generation++;
     for (const t of this._timers) {
       clearTimeout(t);
     }
     this._timers = [];
     this.intransit = 0;
     this.active = 0;
+    const clearing = this.store.clear();
+    this._clearing = clearing;
+    try {
+      await clearing;
+    } finally {
+      if (this._clearing === clearing) {
+        this._clearing = null;
+      }
+    }
   }
 }
 
